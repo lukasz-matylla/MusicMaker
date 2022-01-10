@@ -38,6 +38,8 @@ namespace Composer
             AddTransition(VofV, i.Inversion(2));
             AddTransition(VofV, V);
             AddTransition(VofV, vii00);
+
+            AddTransition(vii00, V7ofVI);
         }
     }
 }

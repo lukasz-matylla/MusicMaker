@@ -63,8 +63,6 @@ namespace MusicMaker
                 return;
             }
 
-            parser.ShowParsedArguments();
-
             ChordTransitionGraph chordGraph = new ClassicalMajorChordProgressionGraphWithSecondaries();
             if (key.Parsed && key.Value == "minor")
             {
@@ -122,8 +120,11 @@ namespace MusicMaker
                     };
                 }
 
+                var notesPerBeat = pattern == AlbertiPattern.UpDown ? 2 : 1;
+
                 var bassMaker = new AlbertiBassMaker();
-                var bass = bassMaker.GenerateBass(chords, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases, pattern: pattern);
+                var bass = bassMaker.GenerateBass(chords, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases, pattern: pattern, 
+                    notesPerBeat: notesPerBeat);
                 piece = piece.Merge(bass);
             }
             else if (bassType.Value == "simple")

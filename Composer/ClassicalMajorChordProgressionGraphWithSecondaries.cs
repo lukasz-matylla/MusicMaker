@@ -10,6 +10,8 @@ namespace Composer
         protected readonly Chord VofV = new Chord(1, new ScaleStep(3, Accidental.Sharp), 5);
         protected readonly Chord V7ofIV = new Chord(0, 2, 4, new ScaleStep(6, Accidental.Flat));
 
+        protected readonly Chord Iaug = new Chord(0, 2, new ScaleStep(4, Accidental.Sharp));
+
         public ClassicalMajorChordProgressionGraphWithSecondaries()
             : base()
         {
@@ -41,6 +43,9 @@ namespace Composer
 
             AddTransition(V7ofIV, IV);
             AddTransition(V7ofIV, ii);
+
+            AddTransition(vii0, VofVI);
+            AddTransition(vii00, VofVI);
         }
     }
 }
