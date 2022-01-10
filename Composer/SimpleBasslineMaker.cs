@@ -19,50 +19,85 @@ namespace Composer
             int measuresCount = -1)
         {
             scale ??= MusicalScale.Major;
-            
+
             if (measuresCount <= 0)
             {
-                measuresCount = Math.Min(chords.Length, rhythm.MeasureCount);
+                measuresCount = chords.Length;
             }
-
-            var result = new Staff(tonic, scale, rhythm.Meter, tempo, measuresCount);
 
             var octaveOffset = Bottom / scale.Count;
             var bassWrap = Bottom - (octaveOffset - 1) * scale.Count;
 
+            var result = new Staff(tonic, scale, rhythm.Meter, tempo, measuresCount);
+
             for (var measure = 0; measure < measuresCount; measure++)
             {
                 var chord = chords[measure % chords.Length];
-                var bass = GetBassNote(chord, octaveOffset, bassWrap);
+                var beats = rhythm[measure % rhythm.MeasureCount];
 
-                var beats = rhythm.Measures[measure % rhythm.MeasureCount];
-
-                foreach (var beat in beats.Where(n => n.Pitch.Step == 0))
+                if (measure % chords.Length == chords.Length - 1)
                 {
-                    var length = TimeToStrongBeat(beats, beat.StartTime, result.MeasureLength);
-                    result.AddNote(new Note(bass, length, beat.StartTime), measure);
+                    FillLastBar(result, measure, chord, beats, octaveOffset, bassWrap);
                 }
+                else
+                {
+                    FillBar(result, measure, chord, beats, octaveOffset, bassWrap);
+                }                
             }
 
             return result;
         }
 
-        private ScaleStep GetBassNote(Chord chord, int octaveOffset, int bassWrap)
-        {            
-            var chordBass = chord.Notes[0];
+        protected virtual void FillLastBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveOffset, int bassWrap)
+        {
+            var bass = GetChordTone(chord, 0, octaveOffset, bassWrap);
 
-            if (chord.Notes[0].Step <= bassWrap)
-            {
-                return new ScaleStep(chordBass.Step, chordBass.Accidental, octaveOffset);
-            }
-
-            return new ScaleStep(chordBass.Step, chordBass.Accidental, octaveOffset - 1);
+            result.AddNote(new Note(bass, result.MeasureLength, 0), measure);
         }
 
-        private int TimeToStrongBeat(IReadOnlyList<Note> rhythm, int t, int measureLength)
+        protected virtual void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveOffset, int bassWrap)
+        {
+            var bass = GetChordTone(chord, 0, octaveOffset, bassWrap);
+
+            for (var i = 0; i < result.Meter.Top; i++)
+            {
+                var start = i * result.Meter.BeatLength;
+
+                if (IsStrongBeat(beats, start))
+                {
+                    var length = TimeToStrongBeat(beats, start, result.MeasureLength);
+                    result.AddNote(new Note(bass, length, start), measure);
+                }
+            }
+        }
+
+        protected ScaleStep GetChordTone(Chord chord, int index, int octaveOffset, int bassWrap)
+        {
+            var chordBass = chord.Notes[0];
+            var chordNote = chord.Notes[index];
+
+            if (chordBass.Step > bassWrap)
+            {
+                octaveOffset--;
+            }
+
+            if (chordNote.Step < chordBass.Step)
+            {
+                octaveOffset++;
+            }
+
+            return new ScaleStep(chordNote.Step, chordNote.Accidental, octaveOffset);
+        }
+
+        protected bool IsStrongBeat(IReadOnlyList<Note> beats, int t)
+        {
+            return beats.FirstOrDefault(b => b.StartTime == t)?.Pitch?.Step == 0;
+        }
+
+        protected int TimeToStrongBeat(IReadOnlyList<Note> rhythm, int t, int measureLength)
         {
             return rhythm.FirstOrDefault(n => n.StartTime > t && n.Pitch.Step == 0)?.StartTime
                 ?? (measureLength - t);
-        }
+        }  
     }
 }

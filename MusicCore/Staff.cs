@@ -9,8 +9,6 @@ namespace MusicCore
         public int StartTime { get; }
         public int Tempo { get; }
         public Meter Meter { get; }
-        public int MetreBottom { get; }
-
         public Instrument Instrument { get; }
         
         public int MeasureCount => Measures.Count;

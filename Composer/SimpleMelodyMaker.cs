@@ -1,4 +1,5 @@
 ﻿using MusicCore;
+using System.Diagnostics;
 using Tools;
 
 namespace Composer
@@ -127,6 +128,13 @@ namespace Composer
                 .ToArray();
         }
 
+        private double[] AvoidForbiddenTensions(ScaleStep[] notes, Chord chord, MusicalScale scale, double alpha = RepeatDowngrade)
+        {
+            return Enumerable.Range(0, notes.Length)
+                .Select(i => chord.Notes.Any(n => scale.NormalizedHalftoneInterval(n, notes[i]) == 1) ? alpha : 1.0)
+                .ToArray();
+        }
+
         private double[] AllEqual(ScaleStep[] notes, double v = 1.0)
         {
             return Enumerable.Repeat(v, notes.Length)
@@ -138,14 +146,8 @@ namespace Composer
             var chordTone = chord.Notes.FirstOrDefault(n => n.Step == note.Step);
             if (chordTone != null)
             {
+                Debug.WriteLine($"For note {note} over {chord}, applying {chordTone.Accidental}");
                 return new ScaleStep(note.Step, chordTone.Accidental, note.Octave);
-            }
-            else
-            {
-                if (note.Accidental == Accidental.None && chord.Notes.Any(n => scale.NormalizedHalftoneInterval(n, note) == 1))
-                {
-                    return new ScaleStep(note.Step, Accidental.Sharp, note.Octave);
-                }
             }
 
             return note;
@@ -202,22 +204,25 @@ namespace Composer
         {
             var currentPitch = target.NoteBefore(measure, 0)?.Pitch ?? new ScaleStep(0);
 
-            var weights = ChordTones(notes, chord)
+            if (rhythm.Count(n => n.Pitch.Step == 0) > 1)
+            {
+                var weights = ChordTones(notes, chord)
                 .Mult(NearTone(notes, target.Scale, currentPitch, FirstNoteCloseness))
                 .Mult(NearMiddle(notes, target.Scale, MiddleOctaveCutoff));
-            currentPitch = notes.SelectRandomly(weights, rand);
-            currentPitch = ApplyAccidental(currentPitch, chord, scale);
-            target.AddNote(rhythm[0].AtPitch(currentPitch), measure);
-
-            var lastBeat = rhythm.Last().StartTime;
-            foreach (var note in rhythm.Skip(1).Where(n => n.Pitch.Step == 0 && n.StartTime < lastBeat))
-            {
-                weights = ChordTones(notes, chord)
-                    .Mult(NearTone(notes, target.Scale, currentPitch, NextNoteCloseness))
-                    .Mult(NearMiddle(notes, target.Scale, MiddleOctaveCutoff));
                 currentPitch = notes.SelectRandomly(weights, rand);
                 currentPitch = ApplyAccidental(currentPitch, chord, scale);
-                target.AddNote(note.AtPitch(currentPitch), measure);
+                target.AddNote(rhythm[0].AtPitch(currentPitch), measure);
+
+                var lastBeat = rhythm.Last().StartTime;
+                foreach (var note in rhythm.Skip(1).Where(n => n.Pitch.Step == 0 && n.StartTime < lastBeat))
+                {
+                    weights = ChordTones(notes, chord)
+                        .Mult(NearTone(notes, target.Scale, currentPitch, NextNoteCloseness))
+                        .Mult(NearMiddle(notes, target.Scale, MiddleOctaveCutoff));
+                    currentPitch = notes.SelectRandomly(weights, rand);
+                    currentPitch = ApplyAccidental(currentPitch, chord, scale);
+                    target.AddNote(note.AtPitch(currentPitch), measure);
+                }
             }
 
             currentPitch = NearestTonic(notes, target.Scale, currentPitch);
@@ -235,7 +240,7 @@ namespace Composer
                 var nextIsStrong = nextWeak == null || 
                     (nextStrong != null && nextStrong.StartTime < nextWeak.StartTime);
 
-                var weights = AllEqual(notes, 1.0);
+                var weights = AvoidForbiddenTensions(notes, chord, scale);
 
                 var before = target.NoteBefore(measure, note.StartTime);
                 var after = target.NoteAfter(measure, note.StartTime);

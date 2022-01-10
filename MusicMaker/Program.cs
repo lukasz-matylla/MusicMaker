@@ -24,7 +24,8 @@ namespace MusicMaker
             parser.Arguments.Add(key);
             var tertian = new SwitchArgument('r', "tertian", "Use tertian harmony instead of classical (functional) one.", false);
             parser.Arguments.Add(tertian);
-            var bassType = new EnumeratedValueArgument<string>('b', "bass", "Type of the bass line. Possible values: none, simple, alberti. Default: alberti", new[] { "none", "simple", "alberti" });
+            var bassType = new EnumeratedValueArgument<string>('b', "bass", "Type of the bass line. Possible values: none, simple, alberti, walking. Default: alberti", 
+                new[] { "none", "simple", "alberti", "walking" });
             bassType.Optional = true;
             parser.Arguments.Add(bassType);
             var albertiType = new EnumeratedValueArgument<string>('a', "alberti", "Alberti bass pattern; only matters when Alberti bass is chosen. Possible values: down, up, updown, zigzag. Default: down", 
@@ -35,13 +36,13 @@ namespace MusicMaker
                 new[] { "CC", "2/4", "3/4", "4/4", "5/4", "6/4", "6/8", "7/8" });
             meterChoice.Optional = true;
             parser.Arguments.Add(meterChoice);
-            var tempo = new BoundedValueArgument<int>('t', "tempo", "Tempo", 50, 240);
+            var tempo = new BoundedValueArgument<int>('t', "tempo", $"Tempo. Default: {DefaultTempo}", 50, 240);
             tempo.Optional = true;
             parser.Arguments.Add(tempo);
-            var phraseLength = new BoundedValueArgument<int>('h', "phraseLength", "Phrase length in measures. Default: 8", 2, 12);
+            var phraseLength = new BoundedValueArgument<int>('h', "phraseLength", $"Phrase length in measures. Default: {DefaultPhraseLength}", 2, 12);
             phraseLength.Optional = true;
             parser.Arguments.Add(phraseLength);
-            var length = new BoundedValueArgument<int>('l', "length", "Piece length in phrases. Default: 2", 1, 8);
+            var length = new BoundedValueArgument<int>('l', "length", $"Piece length in phrases. Default: {DefaultPhrases}", 1, 8);
             length.Optional = true;
             parser.Arguments.Add(length);
 
@@ -122,14 +123,19 @@ namespace MusicMaker
 
                 var notesPerBeat = pattern == AlbertiPattern.UpDown ? 2 : 1;
 
-                var bassMaker = new AlbertiBassMaker();
-                var bass = bassMaker.GenerateBass(chords, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases, pattern: pattern, 
-                    notesPerBeat: notesPerBeat);
+                var bassMaker = new AlbertiBassMaker(pattern: pattern, notesPerBeat: notesPerBeat);
+                var bass = bassMaker.GenerateBass(chords, rhythm, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
                 piece = piece.Merge(bass);
             }
             else if (bassType.Value == "simple")
             {
                 var bassMaker = new SimpleBasslineMaker();
+                var bass = bassMaker.GenerateBass(chords, rhythm, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
+                piece = piece.Merge(bass);
+            }
+            else if (bassType.Value == "walking")
+            {
+                var bassMaker = new WalkingBassMaker();
                 var bass = bassMaker.GenerateBass(chords, rhythm, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
                 piece = piece.Merge(bass);
             }

@@ -27,20 +27,31 @@ namespace Composer
 
         private readonly Pattern[] TriplePatterns = new[]
         {
-            new Pattern(MeasureType.Any, 8, 4),
-            new Pattern(MeasureType.Any, 8, 4),
-            new Pattern(MeasureType.Any, 8, 4),
+            new Pattern(MeasureType.Any, 12),
+            new Pattern(MeasureType.Any, 12),
 
-            new Pattern(MeasureType.Any, 4, 4, 4),
-            new Pattern(MeasureType.Any, 4, 4, 4),
-            new Pattern(MeasureType.Any, 4, 4, 4),
+            new Pattern(MeasureType.Any, 8, 4),
+            new Pattern(MeasureType.Any, 8, 4),
+            new Pattern(MeasureType.Any, 8, 4),
+            new Pattern(MeasureType.Any, 8, 4),
 
             new Pattern(MeasureType.Any, 8, 2, 2),
+            new Pattern(MeasureType.Any, 8, 2, 2),
+            new Pattern(MeasureType.Any, 8, 2, 2),
+
+            new Pattern(MeasureType.Middle, 4, 8),
+            new Pattern(MeasureType.Middle, 4, 8),
+
+            new Pattern(MeasureType.Middle, 2, 2, 8),
+
+            new Pattern(MeasureType.Middle, 2, 2, 4, 4),
 
             new Pattern(MeasureType.Middle, 4, 4, 2, 2),
+
             new Pattern(MeasureType.Middle, 4, 2, 2, 4),
+
             new Pattern(MeasureType.Middle, 4, 2, 2, 2, 2),
-            new Pattern(MeasureType.Middle, 4, 8),
+            
         };
 
         public BasicRhythm()
