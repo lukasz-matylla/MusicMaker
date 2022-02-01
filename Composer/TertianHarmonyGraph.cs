@@ -1,9 +1,4 @@
 ﻿using MusicCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Composer
 {
@@ -18,6 +13,8 @@ namespace Composer
         protected readonly ScaleInterval[] MinorMajor7 = new[] { ScaleInterval.MinorThird, ScaleInterval.MajorThird, ScaleInterval.MajorThird };
         protected readonly ScaleInterval[] FullyDiminished7 = new[] { ScaleInterval.MinorThird, ScaleInterval.MinorThird, ScaleInterval.MinorThird };
 
+        protected virtual ScaleInterval[][] ChordTypes => new[] { Major, Minor, Augmented, Major7, Dominant7, Minor7, MinorMajor7, FullyDiminished7 };
+
         protected readonly int[] LegalSteps = new[] { -2, -1, 1, 2 };
 
         public override MusicalScale Scale { get; }
@@ -30,79 +27,22 @@ namespace Composer
             AddTransitions();
         }
 
-        private void GenerateChords()
+        protected virtual void GenerateChords()
         {
-            var chordTypes = new[] { Major, Minor, Augmented, Major7, Dominant7, Minor7, MinorMajor7, FullyDiminished7 };
-
             for (var rootPitch = 0; rootPitch < 12; ++rootPitch)
             {
-                var root = ChordOperations.PitchToStep(rootPitch, Scale, NoteIdentificationMode.ClosestThenSharp);
-
-                if (root == null)
+                foreach (var chordType in ChordTypes)
                 {
-                    continue;
-                }
-
-                foreach (var chordType in chordTypes)
-                {
-                    if (root.Accidental == Accidental.None)
+                    var chord = ChordOperations.StackedIntervalsMinimumAccidentals(rootPitch, Scale, chordType);
+                    if (chord != null)
                     {
-                        var chord = ChordOperations.StackedIntervals(root, Scale, chordType);
-                        AddAllInversions(chord);
-                    }
-                    else
-                    {
-                        var sharpRoot = ChordOperations.PitchToStep(rootPitch, Scale, NoteIdentificationMode.SharpOnly);
-                        var flatRoot = ChordOperations.PitchToStep(rootPitch, Scale, NoteIdentificationMode.FlatOnly);
-
-                        if (sharpRoot == null)
-                        {
-                            if (flatRoot == null)
-                            {
-                                throw new InvalidOperationException("This case should be impossible");
-                            }
-
-                            var chord = ChordOperations.StackedIntervals(flatRoot, Scale, chordType);
-                            AddAllInversions(chord);
-                        }
-                        else
-                        {
-                            if (flatRoot == null)
-                            {
-                                var chord = ChordOperations.StackedIntervals(sharpRoot, Scale, chordType);
-                                AddAllInversions(chord);
-                            }
-                            else
-                            {
-                                var chord1 = ChordOperations.StackedIntervals(flatRoot, Scale, chordType);
-                                var chord2 = ChordOperations.StackedIntervals(sharpRoot, Scale, chordType);
-
-                                var d = chord1.Notes.Sum(n => Math.Abs((int)n.Accidental)) - chord2.Notes.Sum(n => Math.Abs((int)n.Accidental));
-
-                                if (d < 0)
-                                {
-                                    AddAllInversions(chord1);
-                                }
-                                else
-                                {
-                                    AddAllInversions(chord2);
-                                }
-                            }
-                        }
+                        AddOrUpdateChordAllInversions(chord);
                     }
                 }
             }
         }
 
-        private void AddAllInversions(Chord chord)
-        {
-            for (var i = 0; i < chord.Notes.Count; i++)
-            {
-                AddOrUpdateChord(chord.Inversion(i));
-            }
-        }
-
-        private void AddTransitions()
+        protected virtual void AddTransitions()
         {
             foreach (var chord in Chords)
             {
@@ -113,6 +53,13 @@ namespace Composer
                     AddSplittingTransitions(chord);
                 }
             }
+        }
+
+        protected void AddTransition(int rootPitchFrom, ScaleInterval[] shapeFrom, int rootPitchTo, ScaleInterval[] shapeTo)
+        {
+            AddTransitionAllInversions(
+                ChordOperations.StackedIntervalsMinimumAccidentals(rootPitchFrom, Scale, shapeFrom),
+                ChordOperations.StackedIntervalsMinimumAccidentals(rootPitchTo, Scale, shapeTo));
         }
 
         private void AddDirectVoiceLeadingTransitions(Chord chord)

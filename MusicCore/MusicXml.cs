@@ -64,23 +64,16 @@ namespace MusicCore
             var partElement = new XElement("part");
             partElement.Add(new XAttribute("id", $"P{index + 1}"));
 
-            var topNote = part.Measures.SelectMany(m => m).Max(n => part.Scale.StepToPitch(n.Pitch));
-            var bottomNote = part.Measures.SelectMany(m => m).Min(n => part.Scale.StepToPitch(n.Pitch));
-
-            var twoStaves = bottomNote < -2;
-            var upperOctaveUp = topNote > 24;
-            var lowerOctaveDown = bottomNote < -24;
+            var scaleTransfer = ScaleToCMajor(part.Scale, part.Key);
 
             for (var i = 0; i < part.MeasureCount; i++)
             {
-                var measure = part.Measures[i];
-
                 var measureElement = new XElement("measure");
                 measureElement.Add(new XAttribute("number", $"{i + 1}"));
 
                 if (i == 0)
                 {
-                    var attributes = CreateAttributes(twoStaves, upperOctaveUp, lowerOctaveDown, part.Meter, part.Scale);
+                    var attributes = CreateAttributes(part.Clef, part.Key, part.Meter, part.Scale);
                     measureElement.Add(attributes);
 
                     measureElement.Add(new XElement("sound",
@@ -103,7 +96,7 @@ namespace MusicCore
                             new XElement("duration", note.StartTime - position)));
                     }
 
-                    var noteElement = CreateNote(note, twoStaves, part.Scale);
+                    var noteElement = CreateNote(note, part.Clef, scaleTransfer);
                     measureElement.Add(noteElement);
                     position = note.EndTime;
                 }
@@ -114,15 +107,11 @@ namespace MusicCore
             return partElement;
         }
 
-        private XElement CreateNote(Note note, bool twoStaves, MusicalScale scale)
+        private XElement CreateNote(Note note, Clef clef, ScaleStep[] transfer)
         {
             var noteElement = new XElement("note");
 
-            var xPosition = 140 + note.StartTime;
-            noteElement.Add(
-                new XAttribute("default-x", xPosition));
-
-            var pitch = CreatePitch(note.Pitch, scale);
+            var pitch = CreatePitch(note.Pitch, clef, transfer);
             noteElement.Add(pitch);
 
             noteElement.Add(
@@ -139,82 +128,124 @@ namespace MusicCore
                 noteElement.Add(new XElement("dot"));
             }
 
-            if (twoStaves && scale.StepToPitch(note.Pitch) < 0)
-            {
-                //noteElement.Add(new XElement("voice", 3));
-                noteElement.Add(new XElement("staff", 2));
-            }
-            else
-            {
-                //noteElement.Add(new XElement("voice", 1));
-                noteElement.Add(new XElement("staff", 1));
-            }
-
             return noteElement;
         }
 
-        private XElement CreatePitch(ScaleStep pitch, MusicalScale scale)
+        private XElement CreatePitch(ScaleStep pitch, Clef clef, ScaleStep[] transfer)
         {
-            var step = "CDEFGAB"[pitch.Step];
+            var targetPitch = transfer[pitch.Step];
+            var targetOctave = targetPitch.Octave + pitch.Octave + (int)clef;
+            var targetAccidental = (int)targetPitch.Accidental + (int)pitch.Accidental;
+
             var pitchElement = new XElement("pitch");
 
+            var step = "CDEFGAB"[targetPitch.Step];
             pitchElement.Add(new XElement("step", step));
 
-            var mod = (int)pitch.Accidental + scale.StepToPitch(pitch) - MusicalScale.Major.StepToPitch(pitch);
-            pitchElement.Add(new XElement("alter", mod));
+            pitchElement.Add(new XElement("alter", targetAccidental));
                         
-            pitchElement.Add(new XElement("octave", pitch.Octave + 4));
+            pitchElement.Add(new XElement("octave", targetOctave));
 
             return pitchElement;
         }
 
-        private XElement CreateAttributes(bool twoStaves, bool upperOctaveUp, bool lowerOctaveDown, Meter meter, MusicalScale scale)
+        private ScaleStep[] ScaleToCMajor(MusicalScale scale, Key key)
+        {
+            var tonic = key.ToCMajorNote();
+            
+            if (scale.Count == MusicalScale.Major.Count)
+            {
+                var result = new ScaleStep[scale.Count];
+
+                for (var i = 0; i < scale.Count; i++)
+                {
+                    var note = MusicalScale.Major.ChangeBySteps(tonic, i);
+                    var mod = scale.Steps[i] + (int)tonic.Accidental + (int)key - MusicalScale.Major.StepToPitch(note);
+                    result[i] = note.WithAccidental((Accidental)mod);
+                }
+
+                return result;
+            }
+
+            // No handling yet for non-heptatonic scales
+            throw new NotImplementedException();
+        }
+
+        private XElement CreateAttributes(Clef clef, Key key, Meter meter, MusicalScale scale)
         {
             var attributes = new XElement("attributes");
 
             var divisions = new XElement("divisions", (int)NoteValue.Quarter);
             attributes.Add(divisions);
 
-            var key = new XElement("key", 
-                new XElement("fifths",  
-                scale == MusicalScale.Minor ? -3 : 0));
-            attributes.Add(key);
+            var signature = KeySignature(key, scale);
+            var keyElement = new XElement("key", 
+                new XElement("fifths",  signature));
+            attributes.Add(keyElement);
 
             var time = new XElement("time", 
                 new XElement("beats", meter.Top),
                 new XElement("beat-type", meter.Bottom));
             attributes.Add(time);
 
-            if (twoStaves)
+            var clefType = clef switch
             {
-                var staves = new XElement("staves", 2);
-                attributes.Add(staves);
-            }
+                Clef.Treble8up => "G",
+                Clef.Treble => "G",
+                Clef.Alto => "C",
+                Clef.Bass => "F",
+                Clef.Bass8down => "F",
+                _ => throw new ArgumentOutOfRangeException(nameof(clef)),
+            };
 
-            var clef = new XElement("clef",
+            var clefElement = new XElement("clef",
                 new XAttribute("number", 1),
-                new XElement("sign", "G"));
-            if (upperOctaveUp)
+                new XElement("sign", clefType));
+
+            if (clef == Clef.Treble8up)
             {
-                clef.Add(new XElement("clef-octave-change", 1));
+                clefElement.Add(new XElement("clef-octave-change", 1));
             }
-            attributes.Add(clef);
-
-            if (twoStaves)
+            else if (clef == Clef.Bass8down)
             {
-                var bassClef = new XElement("clef",
-                new XAttribute("number", 2),
-                new XElement("sign", "F"));
-
-                if (upperOctaveUp)
-                {
-                    bassClef.Add(new XElement("clef-octave-change", -1));
-                }
-
-                attributes.Add(bassClef);
+                clefElement.Add(new XElement("clef-octave-change", -1));
             }
+
+            attributes.Add(clefElement);
 
             return attributes;
+        }
+
+        private int KeySignature(Key key, MusicalScale scale)
+        {
+            var result = key switch
+            {
+                Key.C => 0,
+                Key.G => 1,
+                Key.D => 2,
+                Key.A => 3,
+                Key.E => 4,
+                Key.B => 5,
+                Key.Gb => -6,
+                Key.Db => -5,
+                Key.Ab => -4,
+                Key.Eb => -3,
+                Key.Bb => -2,
+                Key.F => -1,
+                _ => throw new ArgumentOutOfRangeException(nameof(key))
+            };
+
+            if (scale == MusicalScale.Minor)
+            {
+                result -= 3;
+            }
+
+            if (result < -6)
+            {
+                result += 12;
+            }
+
+            return result;
         }
     }
 }

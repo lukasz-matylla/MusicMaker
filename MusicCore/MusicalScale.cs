@@ -8,6 +8,8 @@ namespace MusicCore
 
         public int Count => Steps.Count;
 
+        public int this[int n] => Steps[n];
+
         public MusicalScale(params int[] steps)
         {
             Steps = steps;

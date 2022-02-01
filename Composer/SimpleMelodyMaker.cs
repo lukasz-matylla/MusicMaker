@@ -6,9 +6,6 @@ namespace Composer
 {
     public class SimpleMelodyMaker
     {
-        public int RangeFrom { get; }
-        public int RangeTo { get; }
-
         private readonly Random rand;
 
         private const double FirstNoteCloseness = 0.4;
@@ -16,17 +13,16 @@ namespace Composer
         private const double MiddleOctaveCutoff = 0.9;
         private const double RepeatDowngrade = 0.3;
 
-        public SimpleMelodyMaker(int rangeFrom = 60, int rangeTo = 79)
+        public SimpleMelodyMaker()
         {
-            RangeFrom = rangeFrom;
-            RangeTo = rangeTo;
-
             rand = new Random();
         }
 
         public Staff GenerateMelody(Chord[] chords, 
-            Staff rhythm, 
-            int tonic = 60,
+            Staff rhythm,
+            Key key = Key.C,
+            Clef clef = Clef.Treble,
+            int range = 12,
             MusicalScale? scale = null,
             int tempo = 120,
             int measuresCount = -1)
@@ -38,8 +34,8 @@ namespace Composer
                 measuresCount = Math.Min(chords.Length, rhythm.MeasureCount);
             }
 
-            var notes = AvailableNotes(scale, RangeFrom - tonic, RangeTo - tonic);         
-            var result = new Staff(tonic, scale, rhythm.Meter, tempo, measuresCount);
+            var notes = AvailableNotes(scale, -range - (int)key, range - (int)key);
+            var result = new Staff(clef, key, scale, rhythm.Meter, tempo, measuresCount);
 
             FillFirstMeasure(result, notes, chords[0], rhythm.Measures[0], scale);
 

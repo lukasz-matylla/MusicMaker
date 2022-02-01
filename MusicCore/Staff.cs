@@ -4,7 +4,9 @@ namespace MusicCore
 {
     public class Staff
     {
-        public int Tonic { get; }
+        public Clef Clef { get; }
+        public Key Key { get; }
+        public int ReferencePitch { get; }
         public MusicalScale Scale { get; }
         public int StartTime { get; }
         public int Tempo { get; }
@@ -12,7 +14,7 @@ namespace MusicCore
         public Instrument Instrument { get; }
         
         public int MeasureCount => Measures.Count;
-                public int MeasureLength => Meter.MeasureLength;
+        public int MeasureLength => Meter.MeasureLength;
         public int TotalLength => MeasureCount * MeasureLength;
 
         public OverflowBehavior MeasureOverflow { get; }
@@ -21,7 +23,8 @@ namespace MusicCore
         public IReadOnlyList<IReadOnlyList<Note>> Measures => measures;
         public List<List<Note>> measures { get; }
 
-        public Staff(int tonic = 60,
+        public Staff(Clef clef = Clef.Treble,
+            Key key = Key.C,
             MusicalScale? scale = null,
             Meter? meter = null,
             int tempo = 120,
@@ -31,12 +34,15 @@ namespace MusicCore
             OverflowBehavior measureOverflow = OverflowBehavior.Clip,
             OverflowBehavior staffOverflow = OverflowBehavior.Clip)
         {
-            Tonic = tonic;
+            Clef = clef;
+            Key = key;
             Scale = scale ?? MusicalScale.Major;
             Meter = meter ?? Meter.CC;
             StartTime = startTime;
             Instrument = instrument;
             Tempo = tempo;
+
+            ReferencePitch = 12 * (int)Clef + (int)Key;
 
             measures = CreateMeasures(measuresCount);
 
@@ -53,7 +59,7 @@ namespace MusicCore
 
         public Staff Empty()
         {
-            return new Staff(Tonic, Scale, Meter, Tempo, MeasureCount, StartTime, Instrument, MeasureOverflow, StaffOverflow);
+            return new Staff(Clef, Key, Scale, Meter, Tempo, MeasureCount, StartTime, Instrument, MeasureOverflow, StaffOverflow);
         }
 
         public Staff CopyTo(Staff target, int targetPosition = 0, int fromMeasure = 0, int measureCount = -1)
@@ -81,7 +87,7 @@ namespace MusicCore
 
         public Staff Append(Staff other)
         {
-            var copy = new Staff(Tonic, Scale, Meter, Tempo, MeasureCount + other.MeasureCount, StartTime, Instrument, MeasureOverflow, StaffOverflow);
+            var copy = new Staff(Clef, Key, Scale, Meter, Tempo, MeasureCount + other.MeasureCount, StartTime, Instrument, MeasureOverflow, StaffOverflow);
 
             CopyTo(copy);
             other.CopyTo(copy, MeasureCount);
@@ -91,7 +97,7 @@ namespace MusicCore
 
         public Staff Merge(Staff other)
         {
-            var copy = new Staff(Tonic, Scale, Meter, Tempo, Math.Max(MeasureCount, other.MeasureCount), StartTime, Instrument, MeasureOverflow, StaffOverflow);
+            var copy = new Staff(Clef, Key, Scale, Meter, Tempo, Math.Max(MeasureCount, other.MeasureCount), StartTime, Instrument, MeasureOverflow, StaffOverflow);
 
             CopyTo(copy);
             other.CopyTo(copy);
@@ -99,21 +105,21 @@ namespace MusicCore
             return copy;
         }
 
-        public Staff ToScale(int tonic, MusicalScale scale)
+        public Staff ToScale(Clef clef, Key key, MusicalScale scale)
         {
-            var copy = new Staff(tonic, scale, Meter, Tempo, MeasureCount, StartTime, Instrument, MeasureOverflow, StaffOverflow);
+            var copy = new Staff(clef, key, scale, Meter, Tempo, MeasureCount, StartTime, Instrument, MeasureOverflow, StaffOverflow);
             return CopyTo(copy);
         }
 
         public Staff ToTempo(int tempo)
         {
-            var copy = new Staff(Tonic, Scale, Meter, tempo, MeasureCount, StartTime, Instrument, MeasureOverflow, StaffOverflow);
+            var copy = new Staff(Clef, Key, Scale, Meter, tempo, MeasureCount, StartTime, Instrument, MeasureOverflow, StaffOverflow);
             return CopyTo(copy);
         }
 
         public Staff ToStartTime(int startTime)
         {
-            var copy = new Staff(Tonic, Scale, Meter, Tempo, MeasureCount, startTime, Instrument, MeasureOverflow, StaffOverflow);
+            var copy = new Staff(Clef, Key, Scale, Meter, Tempo, MeasureCount, startTime, Instrument, MeasureOverflow, StaffOverflow);
             return CopyTo(copy);
         }
 
@@ -123,7 +129,7 @@ namespace MusicCore
 
         public int ToAbsolutePitch(ScaleStep n)
         {
-            return Tonic + Scale.StepToPitch(n);
+            return ReferencePitch + Scale.StepToPitch(n);
         }
 
         public Note? NoteBefore(int measure, int startTime)

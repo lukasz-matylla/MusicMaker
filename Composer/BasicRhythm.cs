@@ -5,13 +5,14 @@ namespace Composer
 {
     public class BasicRhythm : IRhythmicPatternGenerator
     {
+        private const int CutIntoSectionsThreshold = 8;
+
         private readonly Random rand;
 
         private readonly Pattern[] DuplePatterns = new[]
         {
             new Pattern(MeasureType.Any, 8),
 
-            new Pattern(MeasureType.Any, 4, 4),
             new Pattern(MeasureType.Any, 4, 4),
             new Pattern(MeasureType.Any, 4, 4),
 
@@ -22,22 +23,30 @@ namespace Composer
             new Pattern(MeasureType.Any, 4, 2, 2),
 
             new Pattern(MeasureType.Middle, 2, 2, 2, 2),
+
             new Pattern(MeasureType.Middle, 2, 6),
+
+            new Pattern(MeasureType.Middle, 2, 2, 4),
         };
 
         private readonly Pattern[] TriplePatterns = new[]
         {
             new Pattern(MeasureType.Any, 12),
-            new Pattern(MeasureType.Any, 12),
 
-            new Pattern(MeasureType.Any, 8, 4),
-            new Pattern(MeasureType.Any, 8, 4),
             new Pattern(MeasureType.Any, 8, 4),
             new Pattern(MeasureType.Any, 8, 4),
 
             new Pattern(MeasureType.Any, 8, 2, 2),
             new Pattern(MeasureType.Any, 8, 2, 2),
             new Pattern(MeasureType.Any, 8, 2, 2),
+
+            new Pattern(MeasureType.Middle, 4, 4, 2, 2),
+            new Pattern(MeasureType.Middle, 4, 4, 2, 2),
+
+            new Pattern(MeasureType.Middle, 4, 2, 2, 4),
+
+            new Pattern(MeasureType.Middle, 4, 2, 2, 2, 2),
+            new Pattern(MeasureType.Middle, 4, 2, 2, 2, 2),
 
             new Pattern(MeasureType.Middle, 4, 8),
             new Pattern(MeasureType.Middle, 4, 8),
@@ -46,12 +55,9 @@ namespace Composer
 
             new Pattern(MeasureType.Middle, 2, 2, 4, 4),
 
-            new Pattern(MeasureType.Middle, 4, 4, 2, 2),
+            new Pattern(MeasureType.Middle, 2, 2, 4, 2, 2),
 
-            new Pattern(MeasureType.Middle, 4, 2, 2, 4),
-
-            new Pattern(MeasureType.Middle, 4, 2, 2, 2, 2),
-            
+            new Pattern(MeasureType.Middle, 2, 2, 2, 2, 2, 2),
         };
 
         public BasicRhythm()
@@ -64,7 +70,9 @@ namespace Composer
             var result = new Staff(meter: meter, measuresCount: measures);
 
             var strongBeats = GetStrongBeats(meter);
-            var phraseLength = GetPhraseLength(measures);
+            var phraseLength = measures > CutIntoSectionsThreshold ?
+                SectionLength(measures) :
+                measures;
 
             var step = meter.BeatLength;
             if (meter.Top < 3)
@@ -141,7 +149,7 @@ namespace Composer
             }
         }
 
-        private int GetPhraseLength(int measures)
+        private int SectionLength(int measures)
         {
             var divisors = measures.Factors();
             return divisors.Where(d => d * d >= measures).First();

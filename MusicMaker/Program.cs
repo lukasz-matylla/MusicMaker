@@ -8,7 +8,7 @@ namespace MusicMaker
     public class Program
     {
         const int DefaultPhraseLength = 8;
-        const int DefaultPhrases = 2;
+        const int DefaultPhrases = 4;
         const int DefaultTempo = 110;
 
         public static void Main(string[] args)
@@ -22,6 +22,9 @@ namespace MusicMaker
             var key = new EnumeratedValueArgument<string>('k', "key", "Key of the composition. Default: major.", new[] { "major", "minor" });
             key.Optional = true;
             parser.Arguments.Add(key);
+            var tonic = new EnumeratedValueArgument<string>('n', "tonic", "Tonic of the composition. Default: C for majot key, A for minor",
+                new[] { "C", "Db", "D", "Eb", "F", "Gb", "G", "Ab", "A", "B" });
+            parser.Arguments.Add(tonic);
             var tertian = new SwitchArgument('r', "tertian", "Use tertian harmony instead of classical (functional) one.", false);
             parser.Arguments.Add(tertian);
             var bassType = new EnumeratedValueArgument<string>('b', "bass", "Type of the bass line. Possible values: none, simple, alberti, walking. Default: alberti", 
@@ -70,6 +73,15 @@ namespace MusicMaker
                 chordGraph = new ClassicalMinorChordProgressionGraphWithSecondaries();
             }
 
+            var pieceTonic = chordGraph.Scale == MusicalScale.Major ?
+                Key.C :
+                Key.A;
+
+            if (tonic.Parsed && Enum.TryParse<Key>(tonic.Value, out var tonicKey))
+            {
+                pieceTonic = tonicKey;
+            }
+
             if (tertian.Value)
             {
                 chordGraph = new TertianHarmonyGraph(chordGraph.Scale);
@@ -102,8 +114,11 @@ namespace MusicMaker
             var rhythmGenerator = new BasicRhythm();
             var rhythm = rhythmGenerator.CreateRhythm(measuresInPhrase, meter);
 
-            var melodyMaker = new SimpleMelodyMaker(rangeFrom: 60, rangeTo: 85);
-            var piece = melodyMaker.GenerateMelody(chords, rhythm, tonic: 60, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
+            var parts = new List<Staff>();
+
+            var melodyMaker = new SimpleMelodyMaker();
+            var melody = melodyMaker.GenerateMelody(chords, rhythm, key: pieceTonic, clef: Clef.Treble, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
+            parts.Add(melody);
 
             if (!bassType.Parsed || bassType.Value == "alberti")
             {
@@ -124,20 +139,20 @@ namespace MusicMaker
                 var notesPerBeat = pattern == AlbertiPattern.UpDown ? 2 : 1;
 
                 var bassMaker = new AlbertiBassMaker(pattern: pattern, notesPerBeat: notesPerBeat);
-                var bass = bassMaker.GenerateBass(chords, rhythm, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
-                piece = piece.Merge(bass);
+                var bass = bassMaker.GenerateBass(chords, rhythm, key: pieceTonic, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
+                parts.Add(bass);
             }
             else if (bassType.Value == "simple")
             {
                 var bassMaker = new SimpleBasslineMaker();
-                var bass = bassMaker.GenerateBass(chords, rhythm, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
-                piece = piece.Merge(bass);
+                var bass = bassMaker.GenerateBass(chords, rhythm, key: pieceTonic, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
+                parts.Add(bass);
             }
             else if (bassType.Value == "walking")
             {
                 var bassMaker = new WalkingBassMaker();
-                var bass = bassMaker.GenerateBass(chords, rhythm, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
-                piece = piece.Merge(bass);
+                var bass = bassMaker.GenerateBass(chords, rhythm, key: pieceTonic, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
+                parts.Add(bass);
             }
 
             if (!string.IsNullOrEmpty(outputFile.Value))
@@ -149,14 +164,14 @@ namespace MusicMaker
                 }
                 var mx = new MusicXml();
                 Console.WriteLine($"Writing composition to {name}");
-                mx.WriteToFile(name, piece);
+                mx.WriteToFile(name, parts.ToArray());
             }
 
             if (play.Value)
             {
                 Console.WriteLine("Playing the piece on default output");
                 var player = new MusicPlayer();
-                player.Play(piece);
+                player.Play(parts.ToArray());
             }
         }
     }

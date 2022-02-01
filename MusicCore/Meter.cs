@@ -41,6 +41,11 @@
             }
         }
 
+        public override string ToString()
+        {
+            return $"{Top}/{Bottom}";
+        }
+
         public static Meter CC = new Meter(4, 4);
         public static Meter Triple = new Meter(4, 4);
         public static Meter Half = new Meter(2, 4);

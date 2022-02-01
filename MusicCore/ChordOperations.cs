@@ -51,6 +51,11 @@ namespace MusicCore
 
         public static bool IsChordEquivalent(Chord a, Chord b, MusicalScale scale)
         {
+            if (a == null || b == null)
+            {
+                return false;
+            }
+
             var aAsPitches = a.Notes.Select(n => scale.StepToPitch(n));
             var bAsPitches = b.Notes.Select(n => scale.StepToPitch(n));
 
@@ -104,6 +109,52 @@ namespace MusicCore
             }
 
             return new Chord(notes.ToArray());
+        }
+
+        public static Chord? StackedIntervalsMinimumAccidentals(int halftoneRoot, MusicalScale scale, params ScaleInterval[] intervals)
+        {
+            var root = PitchToStep(halftoneRoot, scale, NoteIdentificationMode.ClosestThenSharp);
+
+            if (root == null)
+            {
+                return null;
+            }
+
+            if (root.Accidental == Accidental.None)
+            {
+                return StackedIntervals(root, scale, intervals);
+            }
+
+            var sharpRoot = PitchToStep(halftoneRoot, scale, NoteIdentificationMode.SharpOnly);
+            var flatRoot = PitchToStep(halftoneRoot, scale, NoteIdentificationMode.FlatOnly);
+
+            if (sharpRoot == null)
+            {
+                if (flatRoot == null)
+                {
+                    throw new InvalidOperationException("This case should be impossible");
+                }
+
+                return StackedIntervals(flatRoot, scale, intervals);
+            }
+            else
+            {
+                if (flatRoot == null)
+                {
+                    return StackedIntervals(sharpRoot, scale, intervals);
+                }
+                else
+                {
+                    var chord1 = StackedIntervals(flatRoot, scale, intervals);
+                    var chord2 = StackedIntervals(sharpRoot, scale, intervals);
+
+                    var d = chord1.Notes.Sum(n => Math.Abs((int)n.Accidental)) - chord2.Notes.Sum(n => Math.Abs((int)n.Accidental));
+
+                    return d < 0 ? 
+                        chord1 : 
+                        chord2;
+                }
+            }
         }
 
         public static int TotalAccidentals(Chord chord)

@@ -14,34 +14,56 @@ namespace MusicCore
             channels = new HashSet<int>();
         }
 
-        public void Play(Staff staff)
+        public void Play(params Staff[] parts)
         {
-            var channel = ReserveFreeChannel();
+            if (parts.Length == 0)
+            {
+                return;
+            }
+
+            var channelMapping = CreateChannelMapping(parts);
             var events = new List<MidiEvent>();
 
-            var instrumentChange = new PatchChangeEvent(0, channel, (int)staff.Instrument - 1);
-            events.Add(instrumentChange);
+            events.AddRange(CreateInstrumentEvents(channelMapping, parts));
 
-            var milisecondsPerQuarterNote = 60000 / staff.Tempo;
+            var milisecondsPerQuarterNote = 60000 / parts[0].Tempo;
             var tempoChange = new TempoEvent(milisecondsPerQuarterNote, 0);
             events.Add(tempoChange);
 
-            for (var measure = 0; measure < staff.MeasureCount; measure++)
+            for (var partIndex = 0; partIndex < parts.Length; partIndex++)
             {
-                var start = staff.StartTime + staff.MeasureLength * measure;
-
-                foreach (var note in staff[measure])
+                for (var measure = 0; measure < parts[partIndex].MeasureCount; measure++)
                 {
-                    var onEvent = new NoteOnEvent(start + note.StartTime, channel, staff.ToAbsolutePitch(note.Pitch), 100, note.Length);
-                    events.Add(onEvent);
-                    events.Add(onEvent.OffEvent);
+                    var start = parts[partIndex].StartTime + parts[partIndex].MeasureLength * measure;
+
+                    foreach (var note in parts[partIndex][measure])
+                    {
+                        var onEvent = new NoteOnEvent(start + note.StartTime, 
+                            channelMapping[partIndex], 
+                            parts[partIndex].ToAbsolutePitch(note.Pitch), 
+                            100, 
+                            note.Length);
+                        events.Add(onEvent);
+                        events.Add(onEvent.OffEvent);
+                    }
                 }
             }
 
             var milisecondsPerTick = milisecondsPerQuarterNote / (int)NoteValue.Quarter;
             Play(events, milisecondsPerTick);
 
-            channels.Remove(channel);
+            foreach (var channel in channelMapping)
+            {
+                channels.Remove(channel);
+            }
+        }
+
+        private IEnumerable<MidiEvent> CreateInstrumentEvents(int[] channelMapping, Staff[] parts)
+        {
+            for (var i = 0; i < parts.Length; i++)
+            {
+                yield return new PatchChangeEvent(0, channelMapping[i], (int)parts[i].Instrument - 1);
+            }
         }
 
         private void Play(IEnumerable<MidiEvent> events, int milisecondsPerTick)
@@ -64,6 +86,16 @@ namespace MusicCore
                     mo.Send(ev.GetAsShortMessage());
                 }
             }
+        }
+
+        private int[] CreateChannelMapping(Staff[] parts)
+        {
+            var result = new List<int>();
+            for (var i = 0; i < parts.Length; i++)
+            {
+                result.Add(ReserveFreeChannel());
+            }
+            return result.ToArray();
         }
 
         private int ReserveFreeChannel()

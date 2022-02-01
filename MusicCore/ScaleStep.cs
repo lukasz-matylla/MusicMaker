@@ -6,11 +6,21 @@
         public Accidental Accidental { get; }
         public int Octave { get; }
 
-        public ScaleStep(int step, Accidental modifier = Accidental.None, int octave = 0)
+        public ScaleStep(int step, Accidental accidental = Accidental.None, int octave = 0)
         {
             Step = step;
-            Accidental = modifier;
+            Accidental = accidental;
             Octave = octave;
+        }
+
+        public ScaleStep WithAccidental(Accidental accidental)
+        {
+            return new ScaleStep(Step, accidental, Octave);
+        }
+
+        public ScaleStep WithOctave(int octave)
+        {
+            return new ScaleStep(Step, Accidental, octave);
         }
 
         public override string ToString()

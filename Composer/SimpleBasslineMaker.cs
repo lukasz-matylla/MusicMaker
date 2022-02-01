@@ -4,16 +4,13 @@ namespace Composer
 {
     public class SimpleBasslineMaker
     {
-        public int Bottom { get; }
+        protected virtual int Cutoff => 6; 
 
-        public SimpleBasslineMaker(int bottom = -11)
-        {
-            Bottom = bottom;
-        }
-
-        public Staff GenerateBass(Chord[] chords,
+        public Staff GenerateBass(
+            Chord[] chords,
             Staff rhythm,
-            int tonic = 60,
+            Key key = Key.C,
+            Clef clef = Clef.Bass,
             MusicalScale? scale = null,
             int tempo = 120,
             int measuresCount = -1)
@@ -25,10 +22,9 @@ namespace Composer
                 measuresCount = chords.Length;
             }
 
-            var octaveOffset = Bottom / scale.Count;
-            var bassWrap = Bottom - (octaveOffset - 1) * scale.Count;
+            var wrapAbove = CalculateTopStaffTone(scale, key);
 
-            var result = new Staff(tonic, scale, rhythm.Meter, tempo, measuresCount);
+            var result = new Staff(clef, key, scale, rhythm.Meter, tempo, measuresCount);
 
             for (var measure = 0; measure < measuresCount; measure++)
             {
@@ -37,27 +33,32 @@ namespace Composer
 
                 if (measure % chords.Length == chords.Length - 1)
                 {
-                    FillLastBar(result, measure, chord, beats, octaveOffset, bassWrap);
+                    FillLastBar(result, measure, chord, beats, wrapAbove);
                 }
                 else
                 {
-                    FillBar(result, measure, chord, beats, octaveOffset, bassWrap);
+                    FillBar(result, measure, chord, beats, wrapAbove);
                 }                
             }
 
             return result;
         }
 
-        protected virtual void FillLastBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveOffset, int bassWrap)
+        private int CalculateTopStaffTone(MusicalScale scale, Key key)
         {
-            var bass = GetChordTone(chord, 0, octaveOffset, bassWrap);
+            return Enumerable.Range(0, scale.Count).Where(i => scale[i] + (int)key <= Cutoff).Last();
+        }
+
+        protected virtual void FillLastBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int wrapAbove)
+        {
+            var bass = GetChordTone(chord, 0, wrapAbove);
 
             result.AddNote(new Note(bass, result.MeasureLength, 0), measure);
         }
 
-        protected virtual void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveOffset, int bassWrap)
+        protected virtual void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int wrapAbove)
         {
-            var bass = GetChordTone(chord, 0, octaveOffset, bassWrap);
+            var bass = GetChordTone(chord, 0, wrapAbove);
 
             for (var i = 0; i < result.Meter.Top; i++)
             {
@@ -71,22 +72,23 @@ namespace Composer
             }
         }
 
-        protected ScaleStep GetChordTone(Chord chord, int index, int octaveOffset, int bassWrap)
+        protected ScaleStep GetChordTone(Chord chord, int index, int wrapAbove)
         {
             var chordBass = chord.Notes[0];
             var chordNote = chord.Notes[index];
+            var octave = 0;
 
-            if (chordBass.Step > bassWrap)
+            if (chordBass.Step > wrapAbove)
             {
-                octaveOffset--;
+                octave--;
             }
 
             if (chordNote.Step < chordBass.Step)
             {
-                octaveOffset++;
+                octave++;
             }
 
-            return new ScaleStep(chordNote.Step, chordNote.Accidental, octaveOffset);
+            return new ScaleStep(chordNote.Step, chordNote.Accidental, octave);
         }
 
         protected bool IsStrongBeat(IReadOnlyList<Note> beats, int t)

@@ -33,6 +33,22 @@ namespace Composer
             }
         }
 
+        protected void AddTransitionAllInversions(Chord? from, Chord? to, double weight = 1)
+        {
+            if (from == null || to == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < from.Notes.Count; i++)
+            {
+                for (var j = 0; j < to.Notes.Count; j++)
+                {
+                    AddTransition(from.Inversion(i), to.Inversion(j), weight);
+                }
+            }
+        }
+
         protected int FindChordIndex(Chord chord)
         {
             return chords.FindIndex(c => ChordOperations.IsChordEquivalent(c, chord, Scale));
@@ -53,6 +69,14 @@ namespace Composer
             }
 
             return index;
+        }
+
+        protected void AddOrUpdateChordAllInversions(Chord chord)
+        {
+            for (var i = 0; i <= chord.Notes.Count; i++)
+            {
+                AddOrUpdateChord(chord.Inversion(i));
+            }
         }
 
         protected int EnsureChord(Chord chord)
