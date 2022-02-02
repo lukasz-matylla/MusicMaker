@@ -7,8 +7,8 @@ namespace Composer
         public IReadOnlyList<Chord> Chords => chords;
         public abstract MusicalScale Scale { get; }
 
-        private readonly List<Chord> chords;
-        private readonly List<GraphTransition> transitions;
+        protected readonly List<Chord> chords;
+        protected readonly List<GraphTransition> transitions;
 
         protected ChordTransitionGraph()
         {

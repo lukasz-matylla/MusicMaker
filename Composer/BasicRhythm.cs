@@ -27,6 +27,8 @@ namespace Composer
             new Pattern(MeasureType.Middle, 2, 6),
 
             new Pattern(MeasureType.Middle, 2, 2, 4),
+
+            new Pattern(MeasureType.Middle, 2, 4, 2),
         };
 
         private readonly Pattern[] TriplePatterns = new[]
@@ -40,8 +42,8 @@ namespace Composer
             new Pattern(MeasureType.Any, 8, 2, 2),
             new Pattern(MeasureType.Any, 8, 2, 2),
 
-            new Pattern(MeasureType.Middle, 4, 4, 2, 2),
-            new Pattern(MeasureType.Middle, 4, 4, 2, 2),
+            new Pattern(MeasureType.Any, 4, 4, 2, 2),
+            new Pattern(MeasureType.Any, 4, 4, 2, 2),
 
             new Pattern(MeasureType.Middle, 4, 2, 2, 4),
 

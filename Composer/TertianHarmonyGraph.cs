@@ -17,14 +17,22 @@ namespace Composer
 
         protected readonly int[] LegalSteps = new[] { -2, -1, 1, 2 };
 
+        protected readonly ChromaticApproach chromaticApproach;
+        protected readonly int tonicPreference;
+
         public override MusicalScale Scale { get; }
 
-        public TertianHarmonyGraph(MusicalScale scale)
+        public TertianHarmonyGraph(MusicalScale scale, ChromaticApproach chromaticApproach = ChromaticApproach.MostlyDiatonic, int tonicPreference = 4)
         {
             Scale = scale;
+            this.chromaticApproach = chromaticApproach;
+            this.tonicPreference = tonicPreference;
 
             GenerateChords();
+
             AddTransitions();
+
+            ApplyTonicPreference();
         }
 
         protected virtual void GenerateChords()
@@ -34,12 +42,37 @@ namespace Composer
                 foreach (var chordType in ChordTypes)
                 {
                     var chord = ChordOperations.StackedIntervalsMinimumAccidentals(rootPitch, Scale, chordType);
-                    if (chord != null)
+                    if (chord != null && IsSuitablyDiatonic(chord))
                     {
                         AddOrUpdateChordAllInversions(chord);
                     }
                 }
             }
+        }
+
+        protected bool IsSuitablyDiatonic(Chord chord)
+        {
+            var diatonic = CountDiatonicNotes(chord);
+            var nonDiatonic = chord.Notes.Count - diatonic;
+
+            switch (chromaticApproach)
+            {
+                case ChromaticApproach.StrictlyDiatonic:
+                    return nonDiatonic == 0;
+                case ChromaticApproach.MostlyDiatonic:
+                    return nonDiatonic <= 1;
+                case ChromaticApproach.MostlyChromatic:
+                    return diatonic > 0;
+                case ChromaticApproach.StrictlyChromatic:
+                    return true;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(chromaticApproach));
+            }
+        }
+
+        protected int CountDiatonicNotes(Chord chord)
+        {
+            return chord.Notes.Count(n => n.Accidental == Accidental.None);
         }
 
         protected virtual void AddTransitions()
@@ -101,6 +134,28 @@ namespace Composer
                     AddTransition(newChord, chord);
                 }
             }
+        }
+
+        protected void ApplyTonicPreference()
+        {
+            var tonicChord = new Chord(0, 2, 4);
+            var tonicIndex = FindChordIndex(tonicChord);
+
+            foreach (var transition in transitions)
+            {
+                if (transition.To == tonicIndex)
+                {
+                    transition.Weight *= tonicPreference;
+                }
+            }
+        }
+
+        public enum ChromaticApproach
+        {
+            StrictlyDiatonic,
+            MostlyDiatonic,
+            MostlyChromatic,
+            StrictlyChromatic
         }
     }
 }
