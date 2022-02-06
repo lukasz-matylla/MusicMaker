@@ -116,8 +116,13 @@ namespace MusicMaker
 
             var parts = new List<Staff>();
 
-            var melodyMaker = new SimpleMelodyMaker();
-            var melody = melodyMaker.GenerateMelody(chords, rhythm, key: pieceTonic, clef: Clef.Treble, scale: chordGraph.Scale, tempo: pieceTempo, measuresCount: measuresInPhrase * totalPhrases);
+            var melody = new SimpleMelodyMaker()
+                .InKey(pieceTonic, chordGraph.Scale)
+                .InClef(Clef.Treble)
+                .InTempo(pieceTempo)
+                .WithRhythm(rhythm)
+                .OverChords(chords)
+                .GenerateMelody(measuresInPhrase * totalPhrases);
             parts.Add(melody);
 
             if (!bassType.Parsed || bassType.Value == "alberti")

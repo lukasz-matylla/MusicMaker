@@ -28,6 +28,11 @@ namespace MusicCore
             return new Note(Pitch, newLength, StartTime);
         }
 
+        public Note WithStart(int newStart)
+        {
+            return new Note(Pitch, Length, newStart);
+        }
+
         public Note Double()
         {
             return new Note(Pitch, Length * 2, StartTime);

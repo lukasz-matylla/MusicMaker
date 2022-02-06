@@ -23,6 +23,9 @@ namespace MusicCore
         public IReadOnlyList<IReadOnlyList<Note>> Measures => measures;
         public List<List<Note>> measures { get; }
 
+        public int lastWrittenMeasure;
+        private Note? lastWrittenNote;
+
         public Staff(Clef clef = Clef.Treble,
             Key key = Key.C,
             MusicalScale? scale = null,
@@ -31,7 +34,7 @@ namespace MusicCore
             int measuresCount = 8,
             int startTime = 0,
             Instrument instrument = Instrument.AcousticGrandPiano,
-            OverflowBehavior measureOverflow = OverflowBehavior.Clip,
+            OverflowBehavior measureOverflow = OverflowBehavior.Extend,
             OverflowBehavior staffOverflow = OverflowBehavior.Clip)
         {
             Clef = clef;
@@ -48,6 +51,9 @@ namespace MusicCore
 
             MeasureOverflow = measureOverflow;
             StaffOverflow = staffOverflow;
+
+            lastWrittenMeasure = -1;
+            lastWrittenNote = null;
         }
 
         public IReadOnlyList<Note> this[int measure]
@@ -73,7 +79,7 @@ namespace MusicCore
             {
                 foreach (var note in Measures[fromMeasure + measure])
                 {
-                    target.AddNote(note, targetPosition + measure);
+                    target.AddNote(targetPosition + measure, note);
                 }
             }
 
@@ -156,9 +162,21 @@ namespace MusicCore
             return prev;
         }
 
+        public Note[] NotesDuring(int measure, int startTime, int endTime)
+        {
+            if (measure < 0 || measure >= MeasureCount)
+            {
+                return new Note[0];
+            }
+
+            return Measures[measure]
+                .Where(n => n.StartTime < endTime && n.EndTime > startTime)
+                .ToArray();
+        }
+
         #endregion
    
-        public Note? AddNote(Note note, int measure)
+        public Staff AddNote(int measure, Note note)
         {
             if (measure < 0)
             {
@@ -170,7 +188,7 @@ namespace MusicCore
                 switch (StaffOverflow)
                 {
                     case OverflowBehavior.Clip:
-                        return null;
+                        return this;
                     case OverflowBehavior.Extend:
                         EnsureMeasures(measure);
                         break;
@@ -192,8 +210,8 @@ namespace MusicCore
                         note = note.WithLength(MeasureLength - note.StartTime);
                         break;
                     case OverflowBehavior.Extend:
-                        AddNote(note.WithLength(MeasureLength - note.StartTime), measure);
-                        return AddNote(note.WithLength(note.EndTime - MeasureLength), measure + 1);
+                        AddNote(measure, note.WithLength(MeasureLength - note.StartTime));
+                        return AddNote(measure + 1, note.WithLength(note.EndTime - MeasureLength));
                     case OverflowBehavior.Throw:
                         throw new ArgumentOutOfRangeException(nameof(note.EndTime));
                 }
@@ -211,7 +229,40 @@ namespace MusicCore
                 measures[measure].Insert(prevIndex + 1, note);
             }
 
-            return note;
+            lastWrittenMeasure = measure;
+            lastWrittenNote = note;
+
+            return this;
+        }
+
+        public Staff AddNext(Note note)
+        {
+            if (lastWrittenNote == null)
+            {
+                throw new InvalidOperationException("Only use this after adding a note");
+            }
+
+            if (lastWrittenNote.EndTime < MeasureLength)
+            {
+                return AddNote(lastWrittenMeasure, note.WithStart(lastWrittenNote.EndTime));
+            }
+
+            return AddNote(lastWrittenMeasure + 1, note.WithStart(0));
+        }
+
+        public Staff AddParallel(Note note)
+        {
+            if (lastWrittenNote == null)
+            {
+                throw new InvalidOperationException("Only use this after adding a note");
+            }
+
+            if (note.Pitch == lastWrittenNote.Pitch)
+            {
+                return this;
+            }
+
+            return AddNote(lastWrittenMeasure, lastWrittenNote.AtPitch(note.Pitch));
         }
 
         public override string ToString()

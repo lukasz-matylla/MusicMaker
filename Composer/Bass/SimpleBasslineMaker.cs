@@ -53,7 +53,7 @@ namespace Composer
         {
             var bass = GetChordTone(chord, 0, wrapAbove);
 
-            result.AddNote(new Note(bass, result.MeasureLength, 0), measure);
+            result.AddNote(measure, new Note(bass, result.MeasureLength, 0));
         }
 
         protected virtual void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int wrapAbove)
@@ -67,7 +67,7 @@ namespace Composer
                 if (IsStrongBeat(beats, start))
                 {
                     var length = TimeToStrongBeat(beats, start, result.MeasureLength);
-                    result.AddNote(new Note(bass, length, start), measure);
+                    result.AddNote(measure, new Note(bass, length, start));
                 }
             }
         }

@@ -28,7 +28,7 @@ namespace Composer
             for (var i = 0; i < noteCount; i++)
             {
                 var pitch = GetAlbertiPitch(chord, Pattern, i, wrapAbove);
-                result.AddNote(new Note(pitch, noteLength, i * noteLength), measure);
+                result.AddNote(measure, new Note(pitch, noteLength, i * noteLength));
             }
         }
 

@@ -99,7 +99,7 @@ namespace Composer
                 {
                     var value = strongBeats.Contains(pos) ? 0 : 1;
 
-                    result.AddNote(new Note(value, rhythm[j], pos), i);
+                    result.AddNote(i, new Note(value, rhythm[j], pos));
 
                     pos += rhythm[j];
                 }
