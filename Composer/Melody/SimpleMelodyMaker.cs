@@ -20,6 +20,7 @@ namespace Composer
         private Clef clef;
         private int range;
         private int tempo;
+        private Instrument instrument;
 
         private readonly List<IPitchFilter> strongNoteFilters;
         private readonly List<IPitchFilter> weakNoteFilters;
@@ -35,6 +36,7 @@ namespace Composer
             clef = Clef.Treble;
             range = 12;
             tempo = 120;
+            instrument = Instrument.AcousticGrandPiano;
 
             strongNoteFilters = new List<IPitchFilter>()
             {
@@ -90,6 +92,28 @@ namespace Composer
             return this;
         }
 
+        public SimpleMelodyMaker OnInstrument(Instrument instrument)
+        {
+            this.instrument = instrument;
+            return this;
+        }
+
+        public SimpleMelodyMaker Above(Staff other, bool allowEqual = true)
+        {
+            var filter = new FilterRelative(other, true, allowEqual);
+            strongNoteFilters.Add(filter);
+            weakNoteFilters.Add(filter);
+            return this;
+        }
+
+        public SimpleMelodyMaker Below(Staff other, bool allowEqual = true)
+        {
+            var filter = new FilterRelative(other, false, allowEqual);
+            strongNoteFilters.Add(filter);
+            weakNoteFilters.Add(filter);
+            return this;
+        }
+
         public Staff GenerateMelody(int measuresCount = -1)
         {
             if (measuresCount <= 0)
@@ -97,7 +121,7 @@ namespace Composer
                 measuresCount = Math.Min(chords.Length, rhythm.MeasureCount);
             }
 
-            var result = new Staff(clef, key, scale, rhythm.Meter, tempo, measuresCount);
+            var result = new Staff(clef, key, scale, rhythm.Meter, tempo, measuresCount, instrument: instrument);
 
             var notes = AvailableNotes();
             InitializeFilters(notes);

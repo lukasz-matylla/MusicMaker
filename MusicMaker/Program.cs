@@ -119,11 +119,23 @@ namespace MusicMaker
             var melody = new SimpleMelodyMaker()
                 .InKey(pieceTonic, chordGraph.Scale)
                 .InClef(Clef.Treble)
+                .OnInstrument(Instrument.AcousticGrandPiano)
                 .InTempo(pieceTempo)
                 .WithRhythm(rhythm)
                 .OverChords(chords)
                 .GenerateMelody(measuresInPhrase * totalPhrases);
             parts.Add(melody);
+
+            /*var melody2 = new SimpleMelodyMaker()
+                .InKey(pieceTonic, chordGraph.Scale)
+                .InClef(Clef.Treble)
+                .OnInstrument(Instrument.Violin)
+                .InTempo(pieceTempo)
+                .WithRhythm(rhythm)
+                .OverChords(chords)
+                .Above(melody)
+                .GenerateMelody(measuresInPhrase * totalPhrases);
+            parts.Add(melody2);*/
 
             if (!bassType.Parsed || bassType.Value == "alberti")
             {
