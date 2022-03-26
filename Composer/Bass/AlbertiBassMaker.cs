@@ -3,7 +3,7 @@ using Tools;
 
 namespace Composer
 {
-    public class AlbertiBassMaker: SimpleBasslineMaker
+    public class AlbertiBassMaker: BassMakerBase, IBasslineMaker
     {
         protected override int Cutoff => 2;
 

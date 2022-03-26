@@ -2,7 +2,7 @@
 
 namespace Composer
 {
-    public class WalkingBassMaker : SimpleBasslineMaker
+    public class RhythmicBassMaker : SimpleBasslineMaker, IBasslineMaker
     {
         protected override int Cutoff => 2;
 
