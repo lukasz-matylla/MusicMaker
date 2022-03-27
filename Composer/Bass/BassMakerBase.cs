@@ -1,9 +1,4 @@
 ﻿using MusicCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Composer
 {
@@ -11,7 +6,7 @@ namespace Composer
     {
         protected virtual int Cutoff => 6;
 
-        public Staff GenerateBass(
+        public virtual Staff GenerateBass(
             Chord[] chords,
             Staff rhythm,
             Key key,
@@ -50,12 +45,12 @@ namespace Composer
             return result;
         }
 
-        private int CalculateTopStaffTone(MusicalScale scale, Key key)
+        protected int CalculateTopStaffTone(MusicalScale scale, Key key)
         {
             return Enumerable.Range(0, scale.Count).Where(i => scale[i] + (int)key <= Cutoff).Last();
         }
 
-        protected ScaleStep GetChordTone(Chord chord, int index, int wrapAbove)
+        protected virtual ScaleStep GetChordTone(Chord chord, int index, int wrapAbove, bool upwards = true)
         {
             var chordBass = chord.Notes[0];
             var chordNote = chord.Notes[index];
@@ -66,7 +61,7 @@ namespace Composer
                 octave--;
             }
 
-            if (chordNote.Step < chordBass.Step)
+            if (upwards && chordNote.Step < chordBass.Step)
             {
                 octave++;
             }
@@ -86,6 +81,6 @@ namespace Composer
             FillBar(result, measure, chord, beats, wrapAbove);
         }
 
-        protected abstract void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int wrapAbove);
+        protected virtual void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int wrapAbove) { }
     }
 }

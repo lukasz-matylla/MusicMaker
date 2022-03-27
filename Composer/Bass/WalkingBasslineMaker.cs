@@ -3,11 +3,13 @@ using Tools;
 
 namespace Composer
 {
-    public class WalkingBasslineMaker : SimpleBasslineMaker, IBasslineMaker
+    public class WalkingBasslineMaker : BassMakerBase, IBasslineMaker
     {
+        
+
         private readonly Random r = new Random();
 
-        private readonly int[] importance = new[] { 1, 20, 8, 12 };
+        private readonly int[] importance = new[] { 6, 30, 20, 20, 8, 6, 5, 4 };
 
         protected override void FillBar(Staff result, int measure, Chord chord, Chord nextChord, IReadOnlyList<Note> beats, int wrapAbove)
         {
@@ -23,7 +25,7 @@ namespace Composer
             for (var i = 1; i < result.Meter.Top; i++)
             {
                 var start = i * noteLength;
-                var pitch = GetChordTone(chord, line[i - 1], wrapAbove);
+                var pitch = GetChordTone(chord, line[i - 1], wrapAbove, false);
                 result.AddNote(measure, new Note(pitch, noteLength, start));
             }
         }
@@ -36,14 +38,16 @@ namespace Composer
                 .Select(n => importance[n])
                 .Sum();
 
-            var pitches = line.Select(n => GetChordTone(chord, n, wrapAbove)).ToArray();
+            var pitches = line
+                .Select(n => GetChordTone(chord, n, wrapAbove, false))
+                .ToArray();
 
-            value -= Math.Abs(scale.NoteInterval(prev, pitches[0]));
+            value -= scale.NoteInterval(prev, pitches[0]) * scale.NoteInterval(prev, pitches[0]);
             for (var i = 0; i < line.Length - 1; i++)
             {
-                value -= Math.Abs(scale.NoteInterval(pitches[i], pitches[i + 1]));
+                value -= scale.NoteInterval(pitches[i], pitches[i + 1]) * scale.NoteInterval(pitches[i], pitches[i + 1]);
             }
-            value -= 5 * Math.Abs(scale.NoteInterval(pitches.Last(), next));
+            value -= 5 * scale.NoteInterval(pitches.Last(), next)* scale.NoteInterval(pitches.Last(), next);
 
             return value;
         }
