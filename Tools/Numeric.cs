@@ -17,5 +17,22 @@
                 .Where(k => n % k == 0)
                 .ToArray();
         }
+
+        public static IDictionary<int, int> Factorize(this int n)
+        {
+            var result = new Dictionary<int, int>();
+
+            for (var i = 2; i < n; i++)
+            {
+                if (n % i == 0)
+                {
+                    n /= i;
+
+                    result[i] = 1 + result.GetValueOrDefault(i);
+                }
+            }
+
+            return result;
+        }
     }
 }

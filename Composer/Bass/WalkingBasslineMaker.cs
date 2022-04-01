@@ -9,7 +9,7 @@ namespace Composer
 
         private readonly Random r = new Random();
 
-        private readonly int[] importance = new[] { 6, 30, 20, 20, 8, 6, 5, 4 };
+        private readonly int[] importance = new[] { 8, 30, 16, 24, 8, 6, 4, 4 };
 
         protected override void FillBar(Staff result, int measure, Chord chord, Chord nextChord, IReadOnlyList<Note> beats, int wrapAbove)
         {

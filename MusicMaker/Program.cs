@@ -35,7 +35,9 @@ namespace MusicMaker
             var chordGenerator = new GraphBasedChordProgression(chordGraph);
             var chords = chordGenerator.GenerateProgression(par.PhraseLength);
 
-            var rhythmGenerator = new BasicRhythm();
+            //var rhythmGenerator = new BasicRhythm();
+            var rhythmGraph = new AutomaticRhythmPatternGraph();
+            var rhythmGenerator = new PatternGraphRhythm(rhythmGraph);
             var rhythm = rhythmGenerator.CreateRhythm(par.PhraseLength, par.Meter);
 
             var parts = new List<Staff>();

@@ -71,9 +71,9 @@ namespace Composer
         {
             var result = new Staff(meter: meter, measuresCount: measures);
 
-            var strongBeats = GetStrongBeats(meter);
+            var strongBeats = RhythmTools.GetStrongBeats(meter);
             var phraseLength = measures > CutIntoSectionsThreshold ?
-                SectionLength(measures) :
+                RhythmTools.SectionLength(measures) :
                 measures;
 
             var step = meter.BeatLength;
@@ -115,7 +115,7 @@ namespace Composer
             for (var i = 0; i < strongBeats.Length; i++)
             {
                 var t = strongBeats[i];
-                var stepsToNext = BeatsInStrongBeat(i, strongBeats, measureLength, step);
+                var stepsToNext = RhythmTools.BeatsInStrongBeat(i, strongBeats, measureLength, step);
 
                 if (where == MeasureType.Closing && i == strongBeats.Length - 1)
                 {
@@ -149,51 +149,6 @@ namespace Composer
             {
                 result.Add(n * step);
             }
-        }
-
-        private int SectionLength(int measures)
-        {
-            var divisors = measures.Factors();
-            return divisors.Where(d => d * d >= measures).First();
-        }
-
-        private int BeatsInStrongBeat(int n, int[] strongBeats, int measureLength, int step)
-        {
-            var length = n < strongBeats.Length - 1 ?
-                strongBeats[n + 1] - strongBeats[n] :
-                measureLength - strongBeats[n];
-
-            return length / step;
-        }
-
-        private int[] GetStrongBeats(Meter meter)
-        {
-            if (meter.IsDuple)
-            {
-                return new[] { 0, meter.MeasureLength / 2 };
-            }
-
-            if (meter.IsTriple)
-            {
-                return new[] { 0 };
-            }
-
-            var i = 0;
-            var result = new List<int>();
-            while (i < meter.Top)
-            {
-                result.Add(i * meter.BeatLength);
-
-                if (meter.Top - i > 4)
-                {
-                    i += 3;
-                }
-                else
-                {
-                    i += 2;
-                }
-            }
-            return result.ToArray();
         }
 
         private enum MeasureType
