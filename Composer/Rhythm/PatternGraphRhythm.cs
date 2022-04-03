@@ -11,9 +11,7 @@ namespace Composer
         private const int CutIntoSectionsThreshold = 8;
 
         private readonly IRhythmicPatternGraph graph;
-        private readonly double startT;
-        private readonly double middleT;
-        private readonly double endT;
+        private readonly double temperature;
         private readonly int preferredPatternNumber;
         private readonly double avoidRepeats;
 
@@ -21,16 +19,12 @@ namespace Composer
 
         public PatternGraphRhythm(
             IRhythmicPatternGraph graph,
-            double startT = 1.5,
-            double middleT = 2.0,
-            double endT = 1.0,
-            int preferredPatternNumber = 3,
+            double temperature = 1.0,
+            int preferredPatternNumber = 2,
             double avoidRepeats = 0.3)
         {
             this.graph = graph;
-            this.startT = startT;
-            this.middleT = middleT;
-            this.endT = endT;
+            this.temperature = temperature;
             this.preferredPatternNumber = preferredPatternNumber;
             this.avoidRepeats = avoidRepeats;
             rand = new Random();
@@ -120,9 +114,9 @@ namespace Composer
         {
             var temp = where switch
             {
-                MeasureType.Opening => startT,
-                MeasureType.Middle => middleT,
-                MeasureType.Closing => endT,
+                MeasureType.Opening => temperature,
+                MeasureType.Middle => temperature * 1.5,
+                MeasureType.Closing => temperature * 0.5,
                 _ => throw new NotImplementedException()
             };
 

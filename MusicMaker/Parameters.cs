@@ -36,7 +36,8 @@ namespace MusicMaker
         private readonly BoundedValueArgument<int> tempo;
         private readonly BoundedValueArgument<int> phraseLength;
         private readonly BoundedValueArgument<int> length;
-        
+        private readonly BoundedValueArgument<double> temperature;
+
         public bool Play => play.Value;
         public string? OutputFile => outputFile.Parsed ? outputFile.Value : null;
         public MusicalScale Scale
@@ -83,6 +84,8 @@ namespace MusicMaker
                 return Meter.CC;
             }
         }
+
+        public double Temperature => temperature.Parsed ? temperature.Value : 1.0;
 
         public int Tempo => tempo.Parsed ? tempo.Value : DefaultTempo;
         public int PhraseLength => phraseLength.Parsed ? phraseLength.Value : DefaultPhraseLength;
@@ -148,6 +151,11 @@ namespace MusicMaker
             length = new BoundedValueArgument<int>('l', "length", $"Piece length in phrases. Default: {DefaultPhrases}", 1, 8);
             length.Optional = true;
             parser.Arguments.Add(length);
+
+            temperature = new BoundedValueArgument<double>('e', "temperature",
+                "'Temperature' of the rhythm; high values prefer shorter notes and more syncopation. Default: 1", 0.1, 5);
+            temperature.Optional = true;
+            parser.Arguments.Add(temperature);
         }
 
         public bool Parse(string[] args)
