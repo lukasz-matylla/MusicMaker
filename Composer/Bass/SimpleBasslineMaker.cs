@@ -4,9 +4,9 @@ namespace Composer
 {
     public class SimpleBasslineMaker : BassMakerBase, IBasslineMaker
     {
-        protected override void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int wrapAbove)
+        protected override void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveWrapThreshold, bool octaveDown)
         {
-            var bass = GetChordTone(chord, 0, wrapAbove);
+            var bass = GetChordTone(chord, 0, octaveWrapThreshold, octaveDown);
 
             for (var i = 0; i < result.Meter.Top; i++)
             {

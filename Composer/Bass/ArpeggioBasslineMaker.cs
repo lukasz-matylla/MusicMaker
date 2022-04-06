@@ -20,19 +20,19 @@ namespace Composer
             Pattern = pattern;
         }
 
-        protected override void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int wrapAbove)
+        protected override void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveWrapThreshold, bool octaveDown)
         {
             var noteLength = result.Meter.BeatLength / NotesPerBeat;
             var noteCount = result.Meter.MeasureLength / noteLength;
 
             for (var i = 0; i < noteCount; i++)
             {
-                var pitch = GetPatternPitch(chord, Pattern, i, wrapAbove);
+                var pitch = GetPatternPitch(chord, Pattern, i, octaveWrapThreshold, octaveDown);
                 result.AddNote(measure, new Note(pitch, noteLength, i * noteLength));
             }
         }
 
-        protected ScaleStep GetPatternPitch(Chord chord, ArpeggioPattern pattern, int noteIndex, int bassWrap)
+        protected ScaleStep GetPatternPitch(Chord chord, ArpeggioPattern pattern, int noteIndex, int octaveWrapThreshold, bool octaveDown)
         {
             var count = chord.Notes.Count;
 
@@ -72,7 +72,7 @@ namespace Composer
                     break;
             }
 
-            return GetChordTone(chord, noteIndex, bassWrap);
+            return GetChordTone(chord, noteIndex, octaveWrapThreshold, octaveDown);
         }
     }
 

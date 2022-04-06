@@ -11,12 +11,12 @@ namespace Composer
 
         private readonly int[] importance = new[] { 8, 30, 16, 24, 8, 6, 4, 4 };
 
-        protected override void FillBar(Staff result, int measure, Chord chord, Chord nextChord, IReadOnlyList<Note> beats, int wrapAbove)
+        protected override void FillBar(Staff result, int measure, Chord chord, Chord nextChord, IReadOnlyList<Note> beats, int octaveWrapThreshold, bool octaveDown)
         {
-            var root = GetChordTone(chord, 0, wrapAbove);
-            var nextRoot = GetChordTone(nextChord, 0, wrapAbove);
+            var root = GetChordTone(chord, 0, octaveWrapThreshold, octaveDown);
+            var nextRoot = GetChordTone(nextChord, 0, octaveWrapThreshold, octaveDown);
 
-            var smoothLines = SequenceOptimizer.FindOptimal(result.Meter.Top - 1, chord.Notes.Count, s => LineQuality(s, chord, wrapAbove, result.Scale, root, nextRoot));
+            var smoothLines = SequenceOptimizer.FindOptimal(result.Meter.Top - 1, chord.Notes.Count, s => LineQuality(s, chord, octaveWrapThreshold, result.Scale, root, nextRoot));
             var line = smoothLines[r.Next(smoothLines.Length)];
 
             var noteLength = result.Meter.BeatLength;
@@ -25,12 +25,12 @@ namespace Composer
             for (var i = 1; i < result.Meter.Top; i++)
             {
                 var start = i * noteLength;
-                var pitch = GetChordTone(chord, line[i - 1], wrapAbove, false);
+                var pitch = GetChordTone(chord, line[i - 1], octaveWrapThreshold, false);
                 result.AddNote(measure, new Note(pitch, noteLength, start));
             }
         }
 
-        private double LineQuality(int[] line, Chord chord, int wrapAbove, MusicalScale scale, ScaleStep prev, ScaleStep next)
+        private double LineQuality(int[] line, Chord chord, int octaveWrapThreshold, MusicalScale scale, ScaleStep prev, ScaleStep next)
         {
             var value = line
                 .Distinct()
@@ -39,7 +39,7 @@ namespace Composer
                 .Sum();
 
             var pitches = line
-                .Select(n => GetChordTone(chord, n, wrapAbove, false))
+                .Select(n => GetChordTone(chord, n, octaveWrapThreshold, false))
                 .ToArray();
 
             value -= scale.NoteInterval(prev, pitches[0]) * scale.NoteInterval(prev, pitches[0]);

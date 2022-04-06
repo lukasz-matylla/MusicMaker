@@ -22,7 +22,8 @@ namespace Composer
                 measuresCount = chords.Length;
             }
 
-            var wrapAbove = CalculateTopStaffTone(scale, key);
+            var octaveWrapThreshold = CalculateTopStaffTone(scale, key);
+            bool octaveDown = (int)key > Cutoff;
 
             var result = new Staff(clef, key, scale, rhythm.Meter, tempo, measuresCount);
 
@@ -34,11 +35,11 @@ namespace Composer
 
                 if (measure % chords.Length == chords.Length - 1)
                 {
-                    FillLastBar(result, measure, chord, beats, wrapAbove);
+                    FillLastBar(result, measure, chord, beats, octaveWrapThreshold, octaveDown);
                 }
                 else
                 {
-                    FillBar(result, measure, chord, nextChord, beats, wrapAbove);
+                    FillBar(result, measure, chord, nextChord, beats, octaveWrapThreshold, octaveDown);
                 }
             }
 
@@ -47,16 +48,29 @@ namespace Composer
 
         protected int CalculateTopStaffTone(MusicalScale scale, Key key)
         {
-            return Enumerable.Range(0, scale.Count).Where(i => scale[i] + (int)key <= Cutoff).Last();
+            if ((int)key > Cutoff)
+            {
+                return Enumerable.Range(0, scale.Count)
+                    .Where(i => scale[i] + (int)key - 12 <= Cutoff)
+                    .Last();
+            }
+            return Enumerable.Range(0, scale.Count)
+                .Where(i => scale[i] + (int)key <= Cutoff)
+                .Last();
         }
 
-        protected virtual ScaleStep GetChordTone(Chord chord, int index, int wrapAbove, bool upwards = true)
+        protected virtual ScaleStep GetChordTone(Chord chord, int index, int octaveWrapThreshold, bool octaveDown, bool upwards = true)
         {
             var chordBass = chord.Notes[0];
             var chordNote = chord.Notes[index % chord.Notes.Count];
             var octave = 0;
 
-            if (chordBass.Step > wrapAbove)
+            if (octaveDown)
+            {
+                octave--;
+            }
+
+            if (chordBass.Step > octaveWrapThreshold)
             {
                 octave--;
             }
@@ -74,18 +88,18 @@ namespace Composer
             return new ScaleStep(chordNote.Step, chordNote.Accidental, octave);
         }
 
-        protected virtual void FillLastBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int wrapAbove)
+        protected virtual void FillLastBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveWrapThreshold, bool octaveDown)
         {
-            var bass = GetChordTone(chord, 0, wrapAbove);
+            var bass = GetChordTone(chord, 0, octaveWrapThreshold, octaveDown);
 
             result.AddNote(measure, new Note(bass, result.MeasureLength, 0));
         }
 
-        protected virtual void FillBar(Staff result, int measure, Chord chord, Chord nextChord, IReadOnlyList<Note> beats, int wrapAbove)
+        protected virtual void FillBar(Staff result, int measure, Chord chord, Chord nextChord, IReadOnlyList<Note> beats, int octaveWrapThreshold, bool octaveDown)
         {
-            FillBar(result, measure, chord, beats, wrapAbove);
+            FillBar(result, measure, chord, beats, octaveWrapThreshold, octaveDown);
         }
 
-        protected virtual void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int wrapAbove) { }
+        protected virtual void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveWrapThreshold, bool octaveDown) { }
     }
 }

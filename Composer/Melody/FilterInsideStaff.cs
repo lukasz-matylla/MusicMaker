@@ -9,7 +9,7 @@ namespace Composer.Melody
         private int topPitch;
         private int bottomPitch;
         
-        public FilterInsideStaff(int allowedLedgers = 0, double cutoff = 0.5)
+        public FilterInsideStaff(int allowedLedgers = 1, double cutoff = 0.5)
             : base(cutoff)
         {
             this.allowedLedgers = allowedLedgers;
@@ -21,11 +21,11 @@ namespace Composer.Melody
 
             var clefOffset = clef switch
             {
-                Clef.Treble8up => 2,
-                Clef.Treble => 2,
+                Clef.Treble8up => -1,
+                Clef.Treble => -1,
                 Clef.Alto => 0,
-                Clef.Bass => -2,
-                Clef.Bass8down => -2,
+                Clef.Bass => 1,
+                Clef.Bass8down => 1,
                 _ => throw new ArgumentOutOfRangeException(nameof(clef))
             };
 
@@ -48,7 +48,7 @@ namespace Composer.Melody
             int startTime, 
             int endTime)
         {
-            var pitch = Scale.StepToPitch(thisNote) - (int)Key;
+            var pitch = Scale.StepToPitch(thisNote) + (int)Key;
 
             if (pitch > topPitch)
             {
