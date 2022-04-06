@@ -4,7 +4,7 @@
     {
         None,
         Simple,
-        Alberti,
+        Arpeggio,
         Rhythmic,
         Walking
     }

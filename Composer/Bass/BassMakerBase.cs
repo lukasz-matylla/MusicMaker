@@ -53,7 +53,7 @@ namespace Composer
         protected virtual ScaleStep GetChordTone(Chord chord, int index, int wrapAbove, bool upwards = true)
         {
             var chordBass = chord.Notes[0];
-            var chordNote = chord.Notes[index];
+            var chordNote = chord.Notes[index % chord.Notes.Count];
             var octave = 0;
 
             if (chordBass.Step > wrapAbove)
@@ -61,9 +61,14 @@ namespace Composer
                 octave--;
             }
 
-            if (upwards && chordNote.Step < chordBass.Step)
+            if (upwards)
             {
-                octave++;
+                octave += index / chord.Notes.Count;
+
+                if (chordNote.Step < chordBass.Step)
+                {
+                    octave++;
+                }
             }
 
             return new ScaleStep(chordNote.Step, chordNote.Accidental, octave);

@@ -71,7 +71,7 @@ namespace MusicMaker
         }
         public Harmony Harmony => harmony.ParseWithDefault(Harmony.Simple);
         public BassType BassType => bassType.ParseWithDefault(BassType.None);
-        public AlbertiPattern BassPattern => bassPattern.ParseWithDefault(AlbertiPattern.Down);
+        public ArpeggioPattern BassPattern => bassPattern.ParseWithDefault(ArpeggioPattern.Alberti);
         public Meter Meter
         {
             get
@@ -122,14 +122,14 @@ namespace MusicMaker
             parser.Arguments.Add(harmony);
 
             var bassOptions = Enum.GetNames<BassType>();
-            bassType = new EnumeratedValueArgument<string>('b', "bass", $"Type of the bass line. Possible values: {string.Join(", ", bassOptions)}. Default: alberti",
+            bassType = new EnumeratedValueArgument<string>('b', "bass", $"Type of the bass line. Possible values: {string.Join(", ", bassOptions)}. Default: {BassType.Arpeggio}",
                 bassOptions);
             bassType.Optional = true;
             bassType.IgnoreCase = true;
             parser.Arguments.Add(bassType);
 
-            var bassPatternOptions = Enum.GetNames<AlbertiPattern>();
-            bassPattern = new EnumeratedValueArgument<string>('a', "bassPattern", $"Bass pattern; only matters when Alberti bass is chosen. Possible values: {string.Join(", ", bassPatternOptions)}. Default: down",
+            var bassPatternOptions = Enum.GetNames<ArpeggioPattern>();
+            bassPattern = new EnumeratedValueArgument<string>('a', "bassPattern", $"Bass pattern; only matters when Arpeggio bass is chosen. Possible values: {string.Join(", ", bassPatternOptions)}. Default: {ArpeggioPattern.Alberti}",
                 bassPatternOptions);
             bassPattern.Optional = true;
             bassPattern.IgnoreCase = true;
