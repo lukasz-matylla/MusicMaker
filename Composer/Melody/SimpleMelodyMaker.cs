@@ -261,16 +261,24 @@ namespace Composer
                 target.AddNote(measure, note.AtPitch(currentPitch));
             }
 
-            if (target.Measures[measure].All(note => note.Pitch == currentPitch) &&
+            if (!UnifySamePitch(target, measure, currentPitch))
+            {
+                FillWeakBeats(target, measure, notes, chord, rhythm);
+            }
+        }
+
+        private bool UnifySamePitch(Staff target, int measure, ScaleStep currentPitch)
+        {
+            if (target.Measures[measure].Count > 1 &&
+                target.Measures[measure].All(note => note.Pitch == currentPitch) &&
                 Enum.GetValues<NoteValue>().Cast<int>().Contains(target.MeasureLength))
             {
                 target.ClearMeasure(measure);
                 target.AddNote(measure, new Note(currentPitch, target.MeasureLength));
+                return true;
             }
-            else
-            {
-                FillWeakBeats(target, measure, notes, chord, rhythm);
-            }
+
+            return false;
         }
 
         private void FillLastMeasure(Staff target, ScaleStep[] notes, int measure, Chord chord, IReadOnlyList<Note> rhythm)
@@ -292,13 +300,7 @@ namespace Composer
                 }
             }
 
-            if (target.Measures[measure].All(note => note.Pitch == finalPitch) && 
-                Enum.GetValues<NoteValue>().Cast<int>().Contains(target.MeasureLength))
-            {
-                target.ClearMeasure(measure);
-                target.AddNote(measure, new Note(finalPitch, target.MeasureLength));
-            }
-            else
+            if (!UnifySamePitch(target, measure, currentPitch))
             {
                 FillWeakBeats(target, measure, notes, chord, rhythm);
             }
