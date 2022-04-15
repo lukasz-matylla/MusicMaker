@@ -46,7 +46,7 @@ namespace MusicMaker
             {
                 if (key.Parsed && key.Value == "minor")
                 {
-                    return MusicalScale.Major;
+                    return MusicalScale.Minor;
                 }
 
                 return MusicalScale.Major;

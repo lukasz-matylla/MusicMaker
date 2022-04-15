@@ -16,6 +16,7 @@ namespace Composer
         private readonly double avoidRepeats;
 
         private readonly Random rand;
+        private readonly int[] noteValues;
 
         public PatternGraphRhythm(
             IRhythmicPatternGraph graph,
@@ -27,7 +28,9 @@ namespace Composer
             this.temperature = temperature;
             this.preferredPatternNumber = preferredPatternNumber;
             this.avoidRepeats = avoidRepeats;
+
             rand = new Random();
+            noteValues = Enum.GetValues<NoteValue>().Cast<int>().ToArray();
         }
 
         public Staff CreateRhythm(int measures, Meter meter)
@@ -159,7 +162,14 @@ namespace Composer
         {
             foreach (var n in element.Notes)
             {
-                result.Add(n * step);
+                var len = n * step;
+                
+                while (len > 0)
+                {
+                    var longestNote = noteValues.Where(l => l <= len).Max();
+                    result.Add(longestNote);
+                    len -= longestNote;
+                }
             }
         }
     }

@@ -261,7 +261,16 @@ namespace Composer
                 target.AddNote(measure, note.AtPitch(currentPitch));
             }
 
-            FillWeakBeats(target, measure, notes, chord, rhythm);
+            if (target.Measures[measure].All(note => note.Pitch == currentPitch) &&
+                Enum.GetValues<NoteValue>().Cast<int>().Contains(target.MeasureLength))
+            {
+                target.ClearMeasure(measure);
+                target.AddNote(measure, new Note(currentPitch, target.MeasureLength));
+            }
+            else
+            {
+                FillWeakBeats(target, measure, notes, chord, rhythm);
+            }
         }
 
         private void FillLastMeasure(Staff target, ScaleStep[] notes, int measure, Chord chord, IReadOnlyList<Note> rhythm)
