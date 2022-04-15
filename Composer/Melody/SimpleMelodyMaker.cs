@@ -283,9 +283,16 @@ namespace Composer
                 }
             }
 
-            
-
-            FillWeakBeats(target, measure, notes, chord, rhythm);
+            if (target.Measures[measure].All(note => note.Pitch == finalPitch) && 
+                Enum.GetValues<NoteValue>().Cast<int>().Contains(target.MeasureLength))
+            {
+                target.ClearMeasure(measure);
+                target.AddNote(measure, new Note(finalPitch, target.MeasureLength));
+            }
+            else
+            {
+                FillWeakBeats(target, measure, notes, chord, rhythm);
+            }
         }
 
         private void FillWeakBeats(Staff target, int measure, ScaleStep[] notes, Chord chord, IReadOnlyList<Note> rhythm)

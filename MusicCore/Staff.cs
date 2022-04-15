@@ -21,7 +21,7 @@ namespace MusicCore
         public OverflowBehavior StaffOverflow { get; }
 
         public IReadOnlyList<IReadOnlyList<Note>> Measures => measures;
-        public List<List<Note>> measures { get; }
+        private List<List<Note>> measures { get; }
 
         public int lastWrittenMeasure;
         private Note? lastWrittenNote;
@@ -263,6 +263,12 @@ namespace MusicCore
             }
 
             return AddNote(lastWrittenMeasure, lastWrittenNote.AtPitch(note.Pitch));
+        }
+
+        public Staff ClearMeasure(int measure)
+        {
+            measures[measure].Clear();
+            return this;
         }
 
         public override string ToString()
