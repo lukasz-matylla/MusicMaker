@@ -11,6 +11,19 @@
                 result + scale;
         }
 
+        public static int Limit(this int n, int lower, int upper)
+        {
+            if (n > upper)
+            {
+                return upper;
+            }
+            if (n < lower)
+            {
+                return lower;
+            }
+            return n;
+        }
+
         public static int[] Factors(this int n)
         {
             return Enumerable.Range(1, n)

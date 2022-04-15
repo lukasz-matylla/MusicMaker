@@ -9,10 +9,6 @@ namespace Composer
     {
         private readonly Random rand;
 
-        private const double NextNoteCloseness = 0.8;
-        private const double MiddleOctaveCutoff = 0.9;
-        private const double RepeatDowngrade = 0.2;
-
         private Staff rhythm;
         private Chord[] chords;
         private Key key;
@@ -24,6 +20,8 @@ namespace Composer
 
         private readonly List<IPitchFilter> strongNoteFilters;
         private readonly List<IPitchFilter> weakNoteFilters;
+
+        bool useChromaticTransitions;
 
         public SimpleMelodyMaker()
         {
@@ -37,6 +35,8 @@ namespace Composer
             range = 12;
             tempo = 120;
             instrument = Instrument.AcousticGrandPiano;
+
+            useChromaticTransitions = false;
 
             strongNoteFilters = new List<IPitchFilter>()
             {
@@ -95,6 +95,12 @@ namespace Composer
         public SimpleMelodyMaker OnInstrument(Instrument instrument)
         {
             this.instrument = instrument;
+            return this;
+        }
+
+        public SimpleMelodyMaker WithChromaticTransitions()
+        {
+            useChromaticTransitions = true;
             return this;
         }
 
@@ -297,18 +303,35 @@ namespace Composer
                 var weights = ApplyFilters(notes, weakNoteFilters, chord, before?.Pitch, after?.Pitch, nextIsStrong, measure, note.StartTime, note.EndTime);
                 var currentPitch = notes.SelectRandomly(weights, rand);
                 currentPitch = ApplyAccidental(currentPitch, chord);
+
+                if (before != null && after != null && useChromaticTransitions)
+                {
+                    currentPitch = ApplyChromaticModification(before.Pitch, currentPitch, after.Pitch);
+                }
+
                 target.AddNote(measure, note.AtPitch(currentPitch));
             }
         }
 
-        private ScaleStep EscapeTone(ScaleStep[] notes, MusicalScale scale, ScaleStep before, ScaleStep after)
+        private ScaleStep ApplyChromaticModification(ScaleStep before, ScaleStep current, ScaleStep after)
         {
-            if (scale.NoteInterval(before, after) > 0)
+            // Chromatic neighbor
+            if (before == current && after == current)
             {
-                return scale.ChangeBySteps(before, 1);
+                var newAccidental = (int)current.Accidental + rand.Next(3) - 1;
+                newAccidental = newAccidental.Limit(-2, 2);
+                return current.WithAccidental((Accidental)newAccidental);
             }
 
-            return scale.ChangeBySteps(before, -1);
+            // Chromatic passing tone
+            var stepToNext = scale.HalftoneIterval(current, after);
+            if (before == current && Math.Abs(stepToNext) == 2)
+            {
+                var change = stepToNext / 2;
+                return scale.ChangeByHalftones(current, change);
+            }
+
+            return current;
         }
 
         private ScaleStep NearestTonic(ScaleStep[] notes, MusicalScale scale, ScaleStep pitch)

@@ -4,6 +4,8 @@ namespace MusicCore
 {
     public class MusicalScale : IEquatable<MusicalScale>
     {
+        public const int HalftonesInOctave = 12;
+
         public IReadOnlyList<int> Steps { get; }
 
         public int Count => Steps.Count;
@@ -12,14 +14,14 @@ namespace MusicCore
 
         public MusicalScale(params int[] steps)
         {
-            Steps = steps;
+            Steps = (new[] { 0 }).Concat(steps.OrderBy(i => i)).ToArray();
         }
 
         #region Intervals
 
         public int StepToPitch(ScaleStep step)
         {
-            return Steps[step.Step] + (int)step.Accidental + 12 * step.Octave;
+            return Steps[step.Step] + (int)step.Accidental + HalftonesInOctave * step.Octave;
         }
 
         public int HalftoneIterval(ScaleStep from, ScaleStep to)
@@ -29,14 +31,14 @@ namespace MusicCore
 
         public int NormalizedHalftoneInterval(ScaleStep from, ScaleStep to)
         {
-            return HalftoneIterval(from, to).WrapTo(12);
+            return HalftoneIterval(from, to).WrapTo(HalftonesInOctave);
         }
 
         public int MinimumHalftoneDistance(ScaleStep from, ScaleStep to)
         {
             var interval = NormalizedHalftoneInterval(from, to);
 
-            return Math.Min(interval, 12 - interval);
+            return Math.Min(interval, HalftonesInOctave - interval);
         }
 
         public int NoteInterval(ScaleStep from, ScaleStep to)
@@ -73,6 +75,45 @@ namespace MusicCore
             return ChangeBySteps(pitch, -1);
         }
 
+        public ScaleStep ChangeByHalftones(ScaleStep pitch, int offset)
+        {
+            var targetPitch = StepToPitch(pitch);
+            var targetNormalized = targetPitch % HalftonesInOctave;
+
+            // If it is a scale step with no accidentals, it takes preference
+            if (Steps.Contains(targetNormalized))
+            {
+                var step = Enumerable.Range(0, Count).Single(i => Steps[i] == targetPitch % HalftonesInOctave);
+                var octaveOffset = targetPitch > 0 ?
+                    targetPitch / 12 :
+                    targetPitch / 12 - 1;
+                return new ScaleStep(step, Accidental.None, octaveOffset);
+            }
+
+            // Prefer to modify current tone with an accidental
+            if (Math.Abs((int)pitch.Accidental + offset) < 2)
+            {
+                return pitch.WithAccidental((Accidental)((int)pitch.Accidental + offset));
+            }
+
+            var closestStep = Enumerable.Range(0, Count)
+                .OrderBy(i => Math.Abs(Steps[i] - targetNormalized))
+                .First();
+            var accidental = targetNormalized - Steps[closestStep];
+            if ((HalftonesInOctave - targetNormalized) < Math.Abs(Steps[closestStep] - targetNormalized))
+            {
+                closestStep = 0;
+                accidental = targetNormalized - HalftonesInOctave;
+            }
+
+            var stepPitch = Steps[closestStep] + accidental;
+            var remainder = targetPitch - stepPitch;
+            var octave = remainder > 0 ?
+                remainder / HalftonesInOctave :
+                remainder / HalftonesInOctave - 1;
+            return new ScaleStep(closestStep, (Accidental)accidental, octave);
+        }
+
         public ScaleStep OctaveUp(ScaleStep pitch)
         {
             return new ScaleStep(pitch.Step, pitch.Accidental, pitch.Octave + 1);
@@ -107,8 +148,8 @@ namespace MusicCore
 
         #region ReadyScales
 
-        public static readonly MusicalScale Major = new MusicalScale(0, 2, 4, 5, 7, 9, 11);
-        public static readonly MusicalScale Minor = new MusicalScale(0, 2, 3, 5, 7, 8, 10);
+        public static readonly MusicalScale Major = new MusicalScale(2, 4, 5, 7, 9, 11);
+        public static readonly MusicalScale Minor = new MusicalScale(2, 3, 5, 7, 8, 10);
 
         #endregion
     }

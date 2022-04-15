@@ -48,6 +48,7 @@ namespace MusicMaker
                 .InTempo(par.Tempo)
                 .WithRhythm(rhythm)
                 .OverChords(chords)
+                .WithChromaticTransitions()
                 .GenerateMelody(par.Length);
             parts.Add(melody);
 
