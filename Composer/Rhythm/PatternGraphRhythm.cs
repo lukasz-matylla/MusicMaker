@@ -41,7 +41,7 @@ namespace Composer
 
             var strongBeats = RhythmTools.GetStrongBeats(meter);
             var phraseLength = measures > CutIntoSectionsThreshold ?
-                RhythmTools.SectionLength(measures) :
+                RhythmTools.SectionLength(measures, CutIntoSectionsThreshold) :
                 measures;
 
             var step = meter.BeatLength;

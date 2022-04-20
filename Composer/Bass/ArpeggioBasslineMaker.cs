@@ -27,20 +27,20 @@ namespace Composer
 
             for (var i = 0; i < noteCount; i++)
             {
-                var pitch = GetPatternPitch(chord, Pattern, i, octaveWrapThreshold, octaveDown);
+                var pitch = GetPatternPitch(chord, Pattern, i, noteCount, octaveWrapThreshold, octaveDown);
                 result.AddNote(measure, new Note(pitch, noteLength, i * noteLength));
             }
         }
 
-        protected ScaleStep GetPatternPitch(Chord chord, ArpeggioPattern pattern, int noteIndex, int octaveWrapThreshold, bool octaveDown)
+        protected ScaleStep GetPatternPitch(Chord chord, ArpeggioPattern pattern, int noteIndex, int noteCount, int octaveWrapThreshold, bool octaveDown)
         {
-            var count = chord.Notes.Count;
+            var chordSize = chord.Notes.Count;
 
             switch (pattern)
             {
                 case ArpeggioPattern.Alberti:
                     noteIndex %= 4;
-                    if (count >= 4)
+                    if (chordSize >= 4)
                     {
                         noteIndex = standarPatternSkip5[noteIndex];
                     }
@@ -50,17 +50,39 @@ namespace Composer
                     }
                     else
                     {
-                        noteIndex %= count;
+                        noteIndex %= chordSize;
                     }
                     break;
 
                 case ArpeggioPattern.Down:
                 default:
-                    noteIndex = (4 - noteIndex).WrapTo(4);
+                    if (noteCount % chordSize == 0)
+                    {
+                        noteIndex = (chordSize - noteIndex).WrapTo(chordSize);
+                    }
+                    else if (noteCount % (chordSize + 1) == 0)
+                    {
+                        noteIndex = (chordSize - noteIndex).WrapTo(chordSize + 1);
+                    }
+                    else
+                    {
+                        noteIndex = (chordSize + 1 - noteIndex).WrapTo(chordSize + 2);
+                        if (noteIndex > chordSize)
+                        {
+                            noteIndex = 0;
+                        }
+                    }
                     break;
 
                 case ArpeggioPattern.Up:
-                    noteIndex %= count;
+                    if (noteCount % (chordSize + 1) == 0)
+                    {
+                        noteIndex %= chordSize + 1;
+                    }
+                    else
+                    {
+                        noteIndex %= chordSize;
+                    }
                     break;
 
                 case ArpeggioPattern.UpDown:

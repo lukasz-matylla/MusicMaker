@@ -44,10 +44,10 @@ namespace Composer
             return length / step;
         }
 
-        public static int SectionLength(int measures)
+        public static int SectionLength(int measures, int maxSize)
         {
             var divisors = measures.Factors();
-            return divisors.Where(d => d * d >= measures).First();
+            return divisors.Where(d => d <= maxSize).Last();
         }
     }
 

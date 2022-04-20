@@ -336,17 +336,27 @@ namespace Composer
             // Chromatic neighbor
             if (before == current && after == current)
             {
-                var newAccidental = (int)current.Accidental + rand.Next(3) - 1;
+                var mod = rand.Next(2) * 2 - 1;
+                var newAccidental = (int)current.Accidental + mod;
                 newAccidental = newAccidental.Limit(-2, 2);
                 return current.WithAccidental((Accidental)newAccidental);
             }
 
             // Chromatic passing tone
-            var stepToNext = scale.HalftoneIterval(current, after);
-            if (before == current && Math.Abs(stepToNext) == 2)
+            var stepToNext = scale.HalftoneIterval(before, after);
+            if (Math.Abs(stepToNext) == 2)
             {
                 var change = stepToNext / 2;
-                return scale.ChangeByHalftones(current, change);
+
+                if (before == current)
+                {
+                    return scale.ChangeByHalftones(current, change);
+                }
+
+                if (after == current)
+                {
+                    return scale.ChangeByHalftones(current, -change);
+                }
             }
 
             return current;
