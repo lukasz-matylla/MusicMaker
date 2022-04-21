@@ -28,6 +28,9 @@ namespace MusicMaker
                     new SimpleMajorChordProgressionGraph() :
                     new SimpleMinorChordProgressionGraph(),
                 Harmony.Classic => par.Scale == MusicalScale.Major ?
+                    new ClassicalMajorChordProgressionGraph() :
+                    new ClassicalMinorChordProgressionGraph(),
+                Harmony.Complex => par.Scale == MusicalScale.Major ?
                     new ClassicalMajorChordProgressionGraphWithSecondaries() :
                     new ClassicalMinorChordProgressionGraphWithSecondaries(),
                 Harmony.Tertian => new TertianHarmonyGraph(par.Scale),

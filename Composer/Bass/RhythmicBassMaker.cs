@@ -27,5 +27,14 @@ namespace Composer
                 }
             }
         }
+
+        protected override void FillLastBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveWrapThreshold, bool octaveDown)
+        {
+            for (var i = 0; i < chord.Notes.Count; i++)
+            {
+                var pitch = GetChordTone(chord, i, octaveWrapThreshold, octaveDown);
+                FillWithNote(result, measure, pitch, beats, octaveWrapThreshold, octaveDown);
+            }           
+        }
     }
 }

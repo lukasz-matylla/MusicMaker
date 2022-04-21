@@ -6,7 +6,8 @@ namespace Composer
     {
         protected override void FillBar(Staff result, int measure, Chord chord, IReadOnlyList<Note> beats, int octaveWrapThreshold, bool octaveDown)
         {
-            FillWithBassNote(result, measure, chord, beats, octaveWrapThreshold, octaveDown);
+            var bass = GetChordTone(chord, 0, octaveWrapThreshold, octaveDown);
+            FillWithNote(result, measure, bass, beats, octaveWrapThreshold, octaveDown);
         }
     }
 }

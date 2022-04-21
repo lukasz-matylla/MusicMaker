@@ -45,6 +45,7 @@ namespace Composer
 
             AddTransition(III, VI);
 
+            AddTransition(iv, i, 3);
             AddTransition(iv, i.Inversion(2));
             AddTransition(iv, v);
             AddTransition(iv, V);
@@ -55,11 +56,11 @@ namespace Composer
             AddTransition(v, V);
             AddTransition(v, VI);
 
-            AddTransition(V, i);
+            AddTransition(V, i, 3);
             AddTransition(V, VI);
             AddTransition(V, V7);
 
-            AddTransition(V7, i);
+            AddTransition(V7, i, 3);
             AddTransition(V7, VI);
 
             AddTransition(VI, iv);

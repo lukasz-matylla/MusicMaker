@@ -77,7 +77,7 @@ namespace MusicCore
 
         public ScaleStep ChangeByHalftones(ScaleStep pitch, int offset)
         {
-            var targetPitch = StepToPitch(pitch);
+            var targetPitch = StepToPitch(pitch) + offset;
             var targetNormalized = targetPitch % HalftonesInOctave;
 
             // If it is a scale step with no accidentals, it takes preference

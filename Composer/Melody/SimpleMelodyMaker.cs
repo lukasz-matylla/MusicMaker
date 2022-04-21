@@ -222,7 +222,7 @@ namespace Composer
         private ScaleStep ApplyAccidental(ScaleStep note, Chord chord)
         {
             var chordTone = chord.Notes.FirstOrDefault(n => n.Step == note.Step);
-            if (chordTone != null)
+            if (chordTone is not null)
             {
                 Debug.WriteLine($"For note {note} over {chord}, applying {chordTone.Accidental}");
                 return new ScaleStep(note.Step, chordTone.Accidental, note.Octave);
@@ -261,16 +261,13 @@ namespace Composer
                 target.AddNote(measure, note.AtPitch(currentPitch));
             }
 
-            if (!UnifySamePitch(target, measure, currentPitch))
-            {
-                FillWeakBeats(target, measure, notes, chord, rhythm);
-            }
+            FillWeakBeats(target, measure, notes, chord, rhythm);
         }
 
         private bool UnifySamePitch(Staff target, int measure, ScaleStep currentPitch)
         {
             if (target.Measures[measure].Count > 1 &&
-                target.Measures[measure].All(note => note.Pitch == currentPitch) &&
+                target.Measures[measure].All(note => note.Pitch.Equals(currentPitch)) &&
                 Enum.GetValues<NoteValue>().Cast<int>().Contains(target.MeasureLength))
             {
                 target.ClearMeasure(measure);
@@ -322,19 +319,38 @@ namespace Composer
                 var currentPitch = notes.SelectRandomly(weights, rand);
                 currentPitch = ApplyAccidental(currentPitch, chord);
 
-                if (before != null && after != null && useChromaticTransitions)
-                {
-                    currentPitch = ApplyChromaticModification(before.Pitch, currentPitch, after.Pitch);
-                }
-
                 target.AddNote(measure, note.AtPitch(currentPitch));
+            }
+
+            if (useChromaticTransitions)
+            {
+                ApplyChromaticTransitions(target, measure, rhythm);
+            }
+        }
+
+        private void ApplyChromaticTransitions(Staff target, int measure, IReadOnlyList<Note> rhythm)
+        {
+            foreach (var note in rhythm.Where(n => n.Pitch.Step > 0))
+            {
+                var before = target.NoteBefore(measure, note.StartTime);
+                var current = target.NoteAt(measure, note.StartTime);
+                var after = target.NoteAfter(measure, note.StartTime);
+
+                if (before != null && current != null && after != null)
+                {
+                    var newPitch = ApplyChromaticModification(before.Pitch, current.Pitch, after.Pitch);
+                    if (!newPitch.Equals(current.Pitch))
+                    {
+                        target.ReplaceNote(measure, current, current.AtPitch(newPitch));
+                    }
+                }
             }
         }
 
         private ScaleStep ApplyChromaticModification(ScaleStep before, ScaleStep current, ScaleStep after)
         {
             // Chromatic neighbor
-            if (before == current && after == current)
+            if (before.Equals(current) && after.Equals(current))
             {
                 var mod = rand.Next(2) * 2 - 1;
                 var newAccidental = (int)current.Accidental + mod;
@@ -347,13 +363,11 @@ namespace Composer
             if (Math.Abs(stepToNext) == 2)
             {
                 var change = stepToNext / 2;
-
-                if (before == current)
+                if (before.Equals(current))
                 {
                     return scale.ChangeByHalftones(current, change);
                 }
-
-                if (after == current)
+                if (after.Equals(current))
                 {
                     return scale.ChangeByHalftones(current, -change);
                 }

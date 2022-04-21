@@ -174,8 +174,19 @@ namespace MusicCore
                 .ToArray();
         }
 
+        public Note? NoteAt(int measure, int startTime)
+        {
+            if (measure < 0 || measure >= MeasureCount)
+            {
+                return null;
+            }
+
+            return Measures[measure]
+                .FirstOrDefault(n => n.StartTime == startTime);
+        }
+
         #endregion
-   
+
         public Staff AddNote(int measure, Note note)
         {
             if (measure < 0)
@@ -263,6 +274,16 @@ namespace MusicCore
             }
 
             return AddNote(lastWrittenMeasure, lastWrittenNote.AtPitch(note.Pitch));
+        }
+
+        public Staff ReplaceNote(int measure, Note current, Note replacement)
+        {
+            var index = measures[measure].FindIndex(n => n == current);
+            if (index >= 0)
+            {
+                measures[measure][index] = replacement;
+            }
+            return this;
         }
 
         public Staff ClearMeasure(int measure)

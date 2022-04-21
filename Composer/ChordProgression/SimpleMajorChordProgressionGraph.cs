@@ -52,7 +52,7 @@ namespace Composer
             AddTransition(iii, ii);
             AddTransition(iii, I.Inversion(1));
 
-            AddTransition(IV, I);
+            AddTransition(IV, I, 3);
             AddTransition(IV, ii);
             AddTransition(IV, IV);
             AddTransition(IV, V);
@@ -60,12 +60,12 @@ namespace Composer
             AddTransition(IV, I.Inversion(2));
             AddTransition(IV, vii0.Inversion(1));
 
-            AddTransition(V, I);
+            AddTransition(V, I, 3);
             AddTransition(V, V);
             AddTransition(V, V7);
             AddTransition(V, vi);
 
-            AddTransition(V7, I);
+            AddTransition(V7, I, 3);
             AddTransition(V7, V7);
             AddTransition(V7, vi);
 

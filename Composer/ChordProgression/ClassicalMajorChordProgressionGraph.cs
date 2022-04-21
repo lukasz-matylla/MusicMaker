@@ -12,6 +12,7 @@ namespace Composer
         protected readonly Chord Fr = new Chord(new ScaleStep(5, Accidental.Flat), 0, 1, new ScaleStep(3, Accidental.Sharp));
         protected readonly Chord Ger = new Chord(new ScaleStep(5, Accidental.Flat), 0, new ScaleStep(2, Accidental.Flat), new ScaleStep(3, Accidental.Sharp));
         protected readonly Chord vii00 = new Chord(6, 1, 3, new ScaleStep(5, Accidental.Flat));
+        protected readonly Chord bVII = new Chord(new ScaleStep(6, Accidental.Flat), 1, 3);
 
         public ClassicalMajorChordProgressionGraph()
             : base()
@@ -19,6 +20,7 @@ namespace Composer
             AddTransition(I, V.Inversion(2));
             AddTransition(I, Vsus4);
             AddTransition(I, vi);
+            AddTransition(I, bVII);
 
             AddTransition(I.Inversion(1), Vsus4);
 
@@ -26,6 +28,7 @@ namespace Composer
             AddTransition(ii, Fr);
             AddTransition(ii, Ger);
             AddTransition(ii, vii00.Inversion(1));
+            AddTransition(ii, bVII);
 
             AddTransition(V.Inversion(2), I.Inversion(1));
             AddTransition(V.Inversion(2), iii);
@@ -41,11 +44,6 @@ namespace Composer
             AddTransition(N, V);
             AddTransition(N, V7);
 
-            AddTransition(V, I);
-            AddTransition(V, V);
-            AddTransition(V, V7);
-            AddTransition(V, vi);
-
             AddTransition(Vsus4, V);
             AddTransition(Vsus4, V7);
 
@@ -59,6 +57,9 @@ namespace Composer
 
             AddTransition(vii00.Inversion(1), I);
             AddTransition(vii00.Inversion(1), I.Inversion(2));
+            AddTransition(vii00.Inversion(1), bVII);
+
+            AddTransition(bVII, I);
         }
     }
 }
