@@ -9,6 +9,8 @@ namespace Composer
     {
         private readonly Random rand;
 
+        private const double StrongBeatNonChordTonesRatio = 0.2;
+
         private Staff rhythm;
         private Chord[] chords;
         private Key key;
@@ -117,6 +119,22 @@ namespace Composer
             var filter = new FilterRelative(other, false, allowEqual);
             strongNoteFilters.Add(filter);
             weakNoteFilters.Add(filter);
+            return this;
+        }
+
+        public SimpleMelodyMaker WithNctStrongBeats(double nctRatio = StrongBeatNonChordTonesRatio)
+        {
+            strongNoteFilters.RemoveAll(filter => filter is FilterChordTones);
+            var filter = new FilterChordTones(nctRatio);
+            strongNoteFilters.Add(filter);
+            return this;
+        }
+
+        public SimpleMelodyMaker OnlyChordStrongBeats()
+        {
+            strongNoteFilters.RemoveAll(filter => filter is FilterChordTones);
+            var filter = new FilterChordTones();
+            strongNoteFilters.Add(filter);
             return this;
         }
 

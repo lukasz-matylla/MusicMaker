@@ -182,9 +182,9 @@ namespace MusicMaker
 
     public enum Harmony
     {
+        Simple,
         Classic,
         Complex,
-        Simple,
         Tertian
     }
 }

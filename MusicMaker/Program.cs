@@ -49,15 +49,31 @@ namespace MusicMaker
             var parts = new List<Staff>();
 
             Console.WriteLine("Generating melody");
-            var melody = new SimpleMelodyMaker()
+            var melodyMaker = new SimpleMelodyMaker()
                 .InKey(par.Tonic, chordGraph.Scale)
                 .InClef(Clef.Treble)
                 .OnInstrument(Instrument.AcousticGrandPiano)
                 .InTempo(par.Tempo)
                 .WithRhythm(rhythm)
-                .OverChords(chords)
-                .WithChromaticTransitions()
-                .GenerateMelody(par.Length);
+                .OverChords(chords);
+
+            switch (par.Harmony)
+            {
+                case Harmony.Simple:
+                    break;
+                case Harmony.Classic:
+                    melodyMaker = melodyMaker
+                        .WithChromaticTransitions();
+                    break;
+                case Harmony.Complex:
+                case Harmony.Tertian:
+                    melodyMaker = melodyMaker
+                        .WithChromaticTransitions()
+                        .WithNctStrongBeats();
+                    break;
+            }
+                            
+            var melody = melodyMaker.GenerateMelody(par.Length);
             parts.Add(melody);
             
             var bassMakerFactory = new BassMakerFactory();
