@@ -8,7 +8,7 @@ namespace Composer
         public const int DuplePatternLength = 8;
         public const int TriplePatternLength = 12;
 
-        private const int CutIntoSectionsThreshold = 8;
+        private const int CutIntoSectionsThreshold = 12;
 
         private readonly IRhythmicPatternGraph graph;
         private readonly double temperature;
@@ -84,12 +84,6 @@ namespace Composer
             {
                 var t = strongBeats[i];
                 var stepsToNext = RhythmTools.BeatsInStrongBeat(i, strongBeats, measureLength, step);
-
-                if (where == MeasureType.Closing && i == strongBeats.Length - 1)
-                {
-                    result.Add(stepsToNext * step);
-                    continue;
-                }
 
                 RhythmicPattern selectedElement;
 

@@ -300,9 +300,9 @@ namespace Composer
         {
             var currentPitch = target.NoteBefore(measure, 0)?.Pitch ?? new ScaleStep(0);
 
-            var lastBeat = rhythm.Last().StartTime;
+            var lastBeat = rhythm.Last(n => n.Pitch.Step == 0).StartTime;
             var finalPitch = NearestTonic(notes, target.Scale, currentPitch);
-            target.AddNote(measure, rhythm.Last().AtPitch(finalPitch));
+            target.AddNote(measure, new Note(finalPitch, target.MeasureLength - lastBeat, lastBeat));
 
             if (rhythm.Count(n => n.Pitch.Step == 0) > 1)
             {              
@@ -317,13 +317,13 @@ namespace Composer
 
             if (!UnifySamePitch(target, measure, currentPitch))
             {
-                FillWeakBeats(target, measure, notes, chord, rhythm);
+                FillWeakBeats(target, measure, notes, chord, rhythm, lastBeat);
             }
         }
 
-        private void FillWeakBeats(Staff target, int measure, ScaleStep[] notes, Chord chord, IReadOnlyList<Note> rhythm)
+        private void FillWeakBeats(Staff target, int measure, ScaleStep[] notes, Chord chord, IReadOnlyList<Note> rhythm, int end = int.MaxValue)
         {
-            foreach (var note in rhythm.Where(n => n.Pitch.Step > 0))
+            foreach (var note in rhythm.Where(n => n.Pitch.Step > 0 && n.EndTime <= end))
             {
                 var nextStrong = rhythm.FirstOrDefault(n => n.Pitch.Step == 0 && n.StartTime > note.StartTime);
                 var nextWeak = rhythm.FirstOrDefault(n => n.Pitch.Step > 0 && n.StartTime > note.StartTime);
