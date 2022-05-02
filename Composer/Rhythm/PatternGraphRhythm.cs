@@ -8,7 +8,7 @@ namespace Composer
         public const int DuplePatternLength = 8;
         public const int TriplePatternLength = 12;
 
-        private const int CutIntoSectionsThreshold = 12;
+        private const int CutIntoSectionsThreshold = 8;
 
         private readonly IRhythmicPatternGraph graph;
         private readonly double temperature;
@@ -37,13 +37,24 @@ namespace Composer
         {
             var result = new Staff(meter: meter, measuresCount: measures);
 
+            if (measures > CutIntoSectionsThreshold)
+            {
+                var phraseLength = RhythmTools.SectionLength(measures, CutIntoSectionsThreshold);
+                var numPhrases = measures / phraseLength;
+
+                for (var i = 0; i < numPhrases; i++)
+                {
+                    var phrase = CreateRhythm(phraseLength, meter);
+                    phrase.CopyTo(result, i * phraseLength);
+                }
+
+                return result;
+            }
+
             var usedPatterns = new List<RhythmicPattern>();
 
             var strongBeats = RhythmTools.GetStrongBeats(meter);
-            var phraseLength = measures > CutIntoSectionsThreshold ?
-                RhythmTools.SectionLength(measures, CutIntoSectionsThreshold) :
-                measures;
-
+            
             var step = meter.BeatLength;
             if (meter.Top == 2)
             {
@@ -52,7 +63,7 @@ namespace Composer
 
             var rhythms = new List<int[]>();
             rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, MeasureType.Opening));
-            for (var i = 1; i < phraseLength - 1; i++)
+            for (var i = 1; i < measures - 1; i++)
             {
                 rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, MeasureType.Middle));
             }
@@ -60,7 +71,7 @@ namespace Composer
 
             for (var i = 0; i < measures; i++)
             {
-                var rhythm = rhythms[i % phraseLength];
+                var rhythm = rhythms[i];
                 var pos = 0;
 
                 for (var j = 0; j < rhythm.Length; j++)
