@@ -144,11 +144,11 @@ namespace MusicMaker
             tempo.Optional = true;
             parser.Arguments.Add(tempo);
 
-            phraseLength = new BoundedValueArgument<int>('r', "phraseLength", $"Phrase length in measures. Default: {DefaultPhraseLength}", 2, 12);
+            phraseLength = new BoundedValueArgument<int>('r', "phraseLength", $"Phrase length in measures. Default: {DefaultPhraseLength}", 2, 32);
             phraseLength.Optional = true;
             parser.Arguments.Add(phraseLength);
 
-            length = new BoundedValueArgument<int>('l', "length", $"Piece length in phrases. Default: {DefaultPhrases}", 1, 8);
+            length = new BoundedValueArgument<int>('l', "length", $"Piece length in phrases. Phrases share the same rhythm and chord progression, but differ in melody. Default: {DefaultPhrases}", 1, 8);
             length.Optional = true;
             parser.Arguments.Add(length);
 

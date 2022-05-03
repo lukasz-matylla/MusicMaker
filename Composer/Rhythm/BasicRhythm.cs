@@ -67,7 +67,7 @@ namespace Composer
             rand = new Random();
         }
 
-        public Staff CreateRhythm(int measures, Meter meter)
+        public Staff CreateRhythm(int measures, Meter meter, Staff? ignore = null)
         {
             var result = new Staff(meter: meter, measuresCount: measures);
 

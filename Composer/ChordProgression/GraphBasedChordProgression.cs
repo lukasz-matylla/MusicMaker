@@ -20,7 +20,18 @@ namespace Composer
         public Chord[] GenerateProgression(int length, CadenceType cadence = CadenceType.Strong)
         {
             var buffer = new Chord[length];
-            GenerateProgression(buffer, cadence, 0, length);
+
+            if (length > SectioningHelper.CutIntoSectionsThreshold)
+            {
+                var half = length / 2;
+                GenerateProgression(buffer, CadenceType.Half, 0, half);
+                GenerateProgression(buffer, cadence, half, length - half);
+            }
+            else
+            {
+                GenerateProgression(buffer, cadence, 0, length);
+            }
+                        
             return buffer;
         }
 

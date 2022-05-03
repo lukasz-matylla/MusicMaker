@@ -7,8 +7,7 @@ namespace Composer
     {
         public const int DuplePatternLength = 8;
         public const int TriplePatternLength = 12;
-
-        private const int CutIntoSectionsThreshold = 8;
+        public const int MaxNotesInStep = 4;
 
         private readonly IRhythmicPatternGraph graph;
         private readonly double temperature;
@@ -33,20 +32,19 @@ namespace Composer
             noteValues = Enum.GetValues<NoteValue>().Cast<int>().ToArray();
         }
 
-        public Staff CreateRhythm(int measures, Meter meter)
+        public Staff CreateRhythm(int measures, Meter meter, Staff? contrastTo = null)
         {
             var result = new Staff(meter: meter, measuresCount: measures);
 
-            if (measures > CutIntoSectionsThreshold)
+            if (measures > SectioningHelper.CutIntoSectionsThreshold)
             {
-                var phraseLength = RhythmTools.SectionLength(measures, CutIntoSectionsThreshold);
-                var numPhrases = measures / phraseLength;
+                var half = (measures + 1) / 2;
 
-                for (var i = 0; i < numPhrases; i++)
-                {
-                    var phrase = CreateRhythm(phraseLength, meter);
-                    phrase.CopyTo(result, i * phraseLength);
-                }
+                var first = CreateRhythm(half, meter, contrastTo);
+                var second = CreateRhythm(measures - half, meter, first);
+
+                first.CopyTo(result);
+                second.CopyTo(result, half);
 
                 return result;
             }
@@ -62,12 +60,15 @@ namespace Composer
             }
 
             var rhythms = new List<int[]>();
-            rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, MeasureType.Opening));
+            rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, 
+                MeasureType.Opening, contrastTo?.Measures[0]));
             for (var i = 1; i < measures - 1; i++)
             {
-                rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, MeasureType.Middle));
+                rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, 
+                    MeasureType.Middle, contrastTo?.Measures[i % contrastTo.MeasureCount]));
             }
-            rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, MeasureType.Closing));
+            rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, 
+                MeasureType.Closing, contrastTo?.Measures[(measures - 1) % contrastTo.MeasureCount]));
 
             for (var i = 0; i < measures; i++)
             {
@@ -87,26 +88,28 @@ namespace Composer
             return result;
         }
 
-        private int[] MakeRhythm(int measureLength, int step, List<RhythmicPattern> usedPatterns, int[] strongBeats, MeasureType where)
+        private int[] MakeRhythm(int measureLength, int step, List<RhythmicPattern> usedPatterns, int[] strongBeats, MeasureType where,
+            IReadOnlyList<Note>? contrastTo = null)
         {
+            var contrastPatterns = contrastTo != null ?
+                RhythmToPatterns(contrastTo, strongBeats, step, measureLength) :
+                new RhythmicPattern[strongBeats.Length];
+            
             var result = new List<int>();
-
             for (var i = 0; i < strongBeats.Length; i++)
             {
-                var t = strongBeats[i];
                 var stepsToNext = RhythmTools.BeatsInStrongBeat(i, strongBeats, measureLength, step);
 
                 RhythmicPattern selectedElement;
-
                 switch (stepsToNext)
                 {
                     case 2:
-                        selectedElement = SelectElement(usedPatterns, where, false);
-                        AddElement(result, selectedElement, step / 4);
+                        selectedElement = SelectElement(usedPatterns, where, false, contrastPatterns[i]);
+                        AddElement(result, selectedElement, step / MaxNotesInStep);
                         break;
                     case 3:
-                        selectedElement = SelectElement(usedPatterns, where, true);
-                        AddElement(result, selectedElement, step / 4);
+                        selectedElement = SelectElement(usedPatterns, where, true, contrastPatterns[i]);
+                        AddElement(result, selectedElement, step / MaxNotesInStep);
                         break;
                     default:
                         result.Add(stepsToNext * step);
@@ -118,7 +121,34 @@ namespace Composer
             return result.ToArray();
         }
 
-        private RhythmicPattern SelectElement(List<RhythmicPattern> usedPatterns, MeasureType where, bool isTriple)
+        private RhythmicPattern[] RhythmToPatterns(IReadOnlyList<Note> notes, int[] strongBeats, int step, int measureLength)
+        {
+            var result = new List<RhythmicPattern>();
+
+            for (var i = 0; i < strongBeats.Length; i++)
+            {
+                var start = strongBeats[i];
+                var end = i < strongBeats.Length - 1 ?
+                    strongBeats[i + 1] :
+                    measureLength;
+
+                var shortest = step / MaxNotesInStep;
+
+                var lengths = notes
+                    .Where(n => n.StartTime >= start && n.EndTime <= end)
+                    .Select(n => n.Length / shortest)
+                    .ToArray();
+
+                var pattern = graph.Patterns
+                    .Where(p => Enumerable.SequenceEqual(lengths, p.Notes))
+                    .Single();
+                result.Add(pattern);
+            }
+
+            return result.ToArray();
+        }
+
+        private RhythmicPattern SelectElement(List<RhythmicPattern> usedPatterns, MeasureType where, bool isTriple, RhythmicPattern? contrastTo)
         {
             var temp = where switch
             {
@@ -151,6 +181,14 @@ namespace Composer
                     .Select(e => usedPatterns.Contains(e) ? 1.0 : usedPatterns.Max(p => graph.Similarity(e, p)))
                     .ToArray();
                 weights = weights.Mult(weightsToPreferSimilar);
+            }
+
+            if (contrastTo != null)
+            {
+                var weightsToContrast = availablePatterns
+                    .Select(e => 1 - graph.Similarity(e, contrastTo))
+                    .ToArray();
+                weights = weights.Mult(weightsToContrast);
             }
 
             var result = availablePatterns.SelectRandomly(weights, rand);
