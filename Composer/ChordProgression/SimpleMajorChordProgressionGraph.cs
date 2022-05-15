@@ -73,8 +73,9 @@ namespace Composer
             AddTransition(I.Inversion(2), V);
             AddTransition(I.Inversion(2), V7);
 
-            AddTransition(vi, IV);
             AddTransition(vi, ii);
+            AddTransition(vi, IV);
+            AddTransition(vi, V);
 
             AddTransition(vii0.Inversion(1), I);
             AddTransition(vii0.Inversion(1), I.Inversion(2));
