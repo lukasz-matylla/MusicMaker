@@ -7,7 +7,7 @@ namespace Composer
         public override MusicalScale Scale => MusicalScale.Major;
 
         protected readonly Chord IVsus2 = new Chord(3, 4, 0);
-        protected readonly Chord N = new Chord(3, new ScaleStep(5, Accidental.Flat), new ScaleStep(1, Accidental.Flat));
+        protected readonly Chord N = new Chord(new ScaleStep(1, Accidental.Flat), 3, new ScaleStep(5, Accidental.Flat)).Inversion(1);
         protected readonly Chord Vsus4 = new Chord(4, 0, 1);
         protected readonly Chord Fr = new Chord(new ScaleStep(5, Accidental.Flat), 0, 1, new ScaleStep(3, Accidental.Sharp));
         protected readonly Chord Ger = new Chord(new ScaleStep(5, Accidental.Flat), 0, new ScaleStep(2, Accidental.Flat), new ScaleStep(3, Accidental.Sharp));
@@ -18,12 +18,13 @@ namespace Composer
         public ClassicalMajorChordProgressionGraph()
             : base()
         {
+            AddTransition(I, V.Inversion(1));
             AddTransition(I, V.Inversion(2));
             AddTransition(I, Vsus4);
             AddTransition(I, vi);
             AddTransition(I, bVII);
 
-            AddTransition(I.Inversion(1), Vsus4);
+            AddTransition(I.Inversion(2), Vsus4);
 
             AddTransition(ii, N);
             AddTransition(ii, Fr);
@@ -31,17 +32,24 @@ namespace Composer
             AddTransition(ii, vii00);
             AddTransition(ii, bVII);
 
-            AddTransition(V.Inversion(2), I.Inversion(1));
+            AddTransition(V.Inversion(1), I);
+            AddTransition(V.Inversion(1), vi);
+            AddTransition(V.Inversion(2), I);
             AddTransition(V.Inversion(2), iii);
 
             AddTransition(IV, N);
             AddTransition(IV, Fr);
             AddTransition(IV, Ger);
-            AddTransition(IV, V);
+            AddTransition(IV, Vsus4);
             AddTransition(IV, vii00);
+            AddTransition(IV, bVII);
 
+            AddTransition(IVsus2, I);
             AddTransition(IVsus2, IV);
+            AddTransition(IVsus2, Vsus4);
 
+            AddTransition(N, I);
+            AddTransition(N, IVsus2);
             AddTransition(N, V);
             AddTransition(N, V7);
 
@@ -56,7 +64,7 @@ namespace Composer
             AddTransition(Ger, V);
             AddTransition(Ger, V7);
 
-            AddTransition(vii0.Inversion(1), vii00);
+            AddTransition(vii0, vii00);
 
             AddTransition(vii00, I);
             AddTransition(vii00, I.Inversion(2));

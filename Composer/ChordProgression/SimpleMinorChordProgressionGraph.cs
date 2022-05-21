@@ -8,7 +8,7 @@ namespace Composer
 
         protected readonly Chord i = new Chord(0, 2, 4);
 
-        protected readonly Chord ii0 = new Chord(1, 3, 5);
+        protected readonly Chord ii0 = new Chord(1, 3, 5).Inversion(1);
 
         protected readonly Chord III = new Chord(2, 4, 6);
 
@@ -46,7 +46,7 @@ namespace Composer
             AddTransition(III, v);
             AddTransition(III, V);
             AddTransition(III, V7);
-            AddTransition(III, VI);
+            AddTransition(III, VI, 3);
 
             AddTransition(iv, i, 3);
             AddTransition(iv, i.Inversion(2));

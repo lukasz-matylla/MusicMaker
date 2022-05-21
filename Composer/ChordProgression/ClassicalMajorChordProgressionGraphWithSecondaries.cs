@@ -89,6 +89,7 @@ namespace Composer
 
             AddTransition(Iaug, ii);
             AddTransition(Iaug, IV);
+            AddTransition(Iaug, Vsus4);
             AddTransition(Iaug, vi);
 
             AddTransition(IIaug, V);

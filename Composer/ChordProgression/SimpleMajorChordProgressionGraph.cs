@@ -19,13 +19,12 @@ namespace Composer
 
         protected readonly Chord vi = new Chord(5, 0, 2);
 
-        protected readonly Chord vii0 = new Chord(6, 1, 3);
+        protected readonly Chord vii0 = new Chord(6, 1, 3).Inversion(1);
 
         public SimpleMajorChordProgressionGraph()
             : base()
         {
-            AddTransition(I, I.Inversion(1));
-            AddTransition(I, V.Inversion(2));
+            AddTransition(I, I);
             AddTransition(I, ii);
             AddTransition(I, iii);
             AddTransition(I, IV);
@@ -33,32 +32,20 @@ namespace Composer
             AddTransition(I, V7);
             AddTransition(I, vi);
 
-            AddTransition(I.Inversion(1), ii);
-            AddTransition(I.Inversion(1), iii);
-            AddTransition(I.Inversion(1), IV);
-            AddTransition(I.Inversion(1), V);
-            AddTransition(I.Inversion(1), V7);
-
-            AddTransition(ii, V);
-            AddTransition(ii, V7);
+            AddTransition(ii, V, 3);
+            AddTransition(ii, V7, 3);
             AddTransition(ii, I.Inversion(2));
-            AddTransition(ii, vii0.Inversion(1));
-
-            AddTransition(V.Inversion(2), I.Inversion(1));
-            AddTransition(V.Inversion(2), iii);
+            AddTransition(ii, vii0);
 
             AddTransition(iii, vi);
-            AddTransition(iii, IV);
-            AddTransition(iii, ii);
-            AddTransition(iii, I.Inversion(1));
 
             AddTransition(IV, I, 3);
             AddTransition(IV, ii);
             AddTransition(IV, IV);
-            AddTransition(IV, V);
-            AddTransition(IV, V7);
+            AddTransition(IV, V, 3);
+            AddTransition(IV, V7, 3);
             AddTransition(IV, I.Inversion(2));
-            AddTransition(IV, vii0.Inversion(1));
+            AddTransition(IV, vii0);
 
             AddTransition(V, I, 3);
             AddTransition(V, V);
@@ -69,16 +56,15 @@ namespace Composer
             AddTransition(V7, V7);
             AddTransition(V7, vi);
 
-            AddTransition(I.Inversion(2), I.Inversion(2));
             AddTransition(I.Inversion(2), V);
             AddTransition(I.Inversion(2), V7);
 
             AddTransition(vi, ii);
-            AddTransition(vi, IV);
+            AddTransition(vi, IV, 3);
             AddTransition(vi, V);
 
-            AddTransition(vii0.Inversion(1), I);
-            AddTransition(vii0.Inversion(1), I.Inversion(2));
+            AddTransition(vii0, I);
+            AddTransition(vii0, I.Inversion(2));
         }
     }
 }

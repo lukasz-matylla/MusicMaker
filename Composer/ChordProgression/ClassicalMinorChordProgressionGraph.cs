@@ -7,7 +7,7 @@ namespace Composer
         public override MusicalScale Scale => MusicalScale.Minor;
 
         protected readonly Chord ii = new Chord(1, 3, new ScaleStep(5, Accidental.Sharp));
-        protected readonly Chord N = new Chord(3, 5, new ScaleStep(1, Accidental.Flat));
+        protected readonly Chord N = new Chord(new ScaleStep(1, Accidental.Flat), 3, 5).Inversion(1);
         protected readonly Chord Fr = new Chord(5, 0, 1, new ScaleStep(3, Accidental.Sharp));
         protected readonly Chord Ger = new Chord(5, 0, 2, new ScaleStep(3, Accidental.Sharp));
         protected readonly Chord vii00 = new Chord(6, new ScaleStep(1, Accidental.Flat), new ScaleStep(3, Accidental.Flat), new ScaleStep(5, Accidental.Flat));
@@ -26,8 +26,10 @@ namespace Composer
 
             AddTransition(ii0, vii00);
 
+            AddTransition(iv, ii);
             AddTransition(iv, vii00);
- 
+            AddTransition(iv, N);
+
             AddTransition(N, V);
             AddTransition(N, V7);
 
