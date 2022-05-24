@@ -41,7 +41,6 @@ namespace Composer
             AddTransition(IV, Fr);
             AddTransition(IV, Ger);
             AddTransition(IV, Vsus4);
-            AddTransition(IV, vii00);
             AddTransition(IV, bVII);
 
             AddTransition(IVsus2, I);
@@ -66,8 +65,8 @@ namespace Composer
 
             AddTransition(vii0, vii00);
 
-            AddTransition(vii00, I);
             AddTransition(vii00, I.Inversion(2));
+            AddTransition(vii00, V7, 3);
             AddTransition(vii00, vi);
             AddTransition(vii00, bVII);
 
