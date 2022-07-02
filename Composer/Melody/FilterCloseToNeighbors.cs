@@ -26,8 +26,8 @@ namespace Composer.Melody
             if (previousNote != null)
             {
                 var interval = chromatic ?
-                0.5 * Scale.HalftoneIterval(previousNote, thisNote) :
-                Scale.NoteInterval(previousNote, thisNote);
+                0.5 * Scale.HalftoneInterval(previousNote, thisNote) :
+                Scale.StepInterval(previousNote, thisNote);
 
                 result *= Math.Pow(Cutoff, Math.Abs(interval));
             }
@@ -35,8 +35,8 @@ namespace Composer.Melody
             if (nextNote != null)
             {
                 var interval = chromatic ?
-                0.5 * Scale.HalftoneIterval(thisNote, nextNote) :
-                Scale.NoteInterval(thisNote, nextNote);
+                0.5 * Scale.HalftoneInterval(thisNote, nextNote) :
+                Scale.StepInterval(thisNote, nextNote);
 
                 result *= Math.Pow(Cutoff, Math.Abs(interval));
             }

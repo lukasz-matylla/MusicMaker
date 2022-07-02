@@ -377,7 +377,7 @@ namespace Composer
             }
 
             // Chromatic passing tone
-            var stepToNext = scale.HalftoneIterval(before, after);
+            var stepToNext = scale.HalftoneInterval(before, after);
             if (Math.Abs(stepToNext) == 2)
             {
                 var change = stepToNext / 2;
@@ -401,7 +401,7 @@ namespace Composer
 
             foreach (var note in notes.Where(n => n.Step == 0))
             {
-                var d = Math.Abs(scale.HalftoneIterval(note, pitch));
+                var d = Math.Abs(scale.HalftoneInterval(note, pitch));
 
                 if (d < dist)
                 {

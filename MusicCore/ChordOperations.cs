@@ -66,7 +66,7 @@ namespace MusicCore
         {
             var movedBySteps = scale.ChangeBySteps(step, interval.Steps);
 
-            var halftoneDifference = scale.HalftoneIterval(step, movedBySteps) - interval.Halftones;
+            var halftoneDifference = scale.HalftoneInterval(step, movedBySteps) - interval.Halftones;
             var modifier = (int)step.Accidental - halftoneDifference;
 
             if (Math.Abs(modifier) <= 2)
@@ -77,23 +77,10 @@ namespace MusicCore
             throw new InvalidOperationException($"Diatonic movement of {step} by {interval} is impossible in scale {scale}");
         }
 
-        public static ScaleStep HalftoneMove(ScaleStep step, int interval, MusicalScale scale)
-        {
-            var pitch = scale.StepToPitch(step);
-            pitch = (pitch + interval).WrapTo(12);
-            var newNote = PitchToStep(pitch, scale, NoteIdentificationMode.ClosestThenSharp);
-
-            if (newNote == null)
-            {
-                throw new InvalidOperationException($"Pitch {pitch} can't be expressed in scale {scale}");
-            }
-            return newNote;
-        }
-
         public static Chord ModifyChord(Chord chord, int note, int halftoneInterval, MusicalScale scale)
         {
             var n = chord.Notes[note];
-            n = HalftoneMove(n, halftoneInterval, scale);
+            n = scale.ChangeByHalftones(n, halftoneInterval).WithOctave(0);
             return chord.WithChangedNote(note, n);
         }
 
@@ -155,6 +142,38 @@ namespace MusicCore
                         chord2;
                 }
             }
+        }
+
+        public static ScaleStep NextToneAbove(Chord chord, MusicalScale scale, ScaleStep from)
+        {
+            bool IsBelow(ScaleStep note)
+            {
+                return (note.Step < from.Step) ||
+                    (note.Step == from.Step && note.Accidental <= from.Accidental);
+            }
+
+            var result = chord.Notes
+                .Select(n => IsBelow(n) ? n.WithOctave(from.Octave + 1) : n.WithOctave(from.Octave))
+                .OrderBy(n => scale.StepToPitch(n))
+                .First();
+
+            return result;
+        }
+
+        public static ScaleStep NextToneBelow(Chord chord, MusicalScale scale, ScaleStep from)
+        {
+            bool IsAbove(ScaleStep note)
+            {
+                return (note.Step > from.Step) ||
+                    (note.Step == from.Step && note.Accidental >= from.Accidental);
+            }
+
+            var result = chord.Notes
+                .Select(n => IsAbove(n) ? n.WithOctave(from.Octave - 1) : n.WithOctave(from.Octave))
+                .OrderByDescending(n => scale.StepToPitch(n))
+                .First();
+
+            return result;
         }
 
         public static int TotalAccidentals(Chord chord)

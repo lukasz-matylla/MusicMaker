@@ -120,7 +120,7 @@ namespace Composer
             {
                 var newChord = new Chord(
                     rootPosition.Notes
-                    .Concat(new[] { ChordOperations.HalftoneMove(rootPosition.Notes[0], interval, Scale) })
+                    .Concat(new[] { Scale.ChangeByHalftones(rootPosition.Notes[0], interval) })
                     .ToArray());
 
                 if (rootIndex > 0)

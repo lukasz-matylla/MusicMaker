@@ -28,26 +28,26 @@ namespace Composer.Melody
 
             if (nextNote == null)
             {
-                var interval = Scale.HalftoneIterval(previousNote, thisNote);
+                var interval = Scale.HalftoneInterval(previousNote, thisNote);
                 return Math.Pow(Cutoff, Math.Abs(interval));
             }
 
-            var beforeInterval = Scale.HalftoneIterval(previousNote, thisNote);
-            var afterInterval = Scale.HalftoneIterval(thisNote, nextNote);
+            var beforeInterval = Scale.HalftoneInterval(previousNote, thisNote);
+            var afterInterval = Scale.HalftoneInterval(thisNote, nextNote);
 
             if (!nextIsStrong)
             {
                 return Math.Pow(Cutoff, Math.Abs(beforeInterval)) * Math.Pow(DistantCutoff, Math.Abs(afterInterval));
             }
 
-            if (Math.Abs(Scale.NoteInterval(previousNote, nextNote)) == 0 &&
-                Math.Abs(Scale.NoteInterval(thisNote, nextNote)) == 1)
+            if (Math.Abs(Scale.StepInterval(previousNote, nextNote)) == 0 &&
+                Math.Abs(Scale.StepInterval(thisNote, nextNote)) == 1)
             {
                 return 1.0;
             }
 
-            if (Math.Abs(Scale.NoteInterval(previousNote, nextNote)) == 1 &&
-                Math.Abs(Scale.NoteInterval(thisNote, nextNote)) == 1)
+            if (Math.Abs(Scale.StepInterval(previousNote, nextNote)) == 1 &&
+                Math.Abs(Scale.StepInterval(thisNote, nextNote)) == 1)
             {
                 return 1.0;
             }

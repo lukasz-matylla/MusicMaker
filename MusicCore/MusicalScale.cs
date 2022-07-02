@@ -24,14 +24,14 @@ namespace MusicCore
             return Steps[step.Step] + (int)step.Accidental + HalftonesInOctave * step.Octave;
         }
 
-        public int HalftoneIterval(ScaleStep from, ScaleStep to)
+        public int HalftoneInterval(ScaleStep from, ScaleStep to)
         {
             return StepToPitch(to) - StepToPitch(from);
         }
 
         public int NormalizedHalftoneInterval(ScaleStep from, ScaleStep to)
         {
-            return HalftoneIterval(from, to).WrapTo(HalftonesInOctave);
+            return HalftoneInterval(from, to).WrapTo(HalftonesInOctave);
         }
 
         public int MinimumHalftoneDistance(ScaleStep from, ScaleStep to)
@@ -41,7 +41,7 @@ namespace MusicCore
             return Math.Min(interval, HalftonesInOctave - interval);
         }
 
-        public int NoteInterval(ScaleStep from, ScaleStep to)
+        public int StepInterval(ScaleStep from, ScaleStep to)
         {
             return to.Step - from.Step + Count * (to.Octave - from.Octave);
         }

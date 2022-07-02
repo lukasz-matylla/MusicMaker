@@ -140,6 +140,11 @@ namespace MusicCore
 
         public Note? NoteBefore(int measure, int startTime)
         {
+            if (measure < 0 || measure >= MeasureCount)
+            {
+                return null;
+            }
+
             var prev = Measures[measure].OrderBy(n => n.StartTime).LastOrDefault(n => n.StartTime < startTime);
 
             if (prev == null && measure > 0)
