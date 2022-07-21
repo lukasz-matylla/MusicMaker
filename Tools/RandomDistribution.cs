@@ -19,18 +19,17 @@ namespace Tools
             return Enumerable.Range(0, v.Length).Select(i => v[i] + w[i]).ToArray();
         }
 
-        public static T SelectRandomly<T>(this IReadOnlyList<T> items, Random r)
+        public static T SelectRandomly<T>(this Random r, IReadOnlyList<T> items)
         {
             return items[r.Next(items.Count)];
         }
 
-        public static T SelectRandomly<T>(this IReadOnlyList<T> items, double[] weights, Random r)
+        public static T SelectRandomly<T>(this Random r, IReadOnlyList<T> items, double[] weights)
         {
             var sum = weights.Sum();
             if (sum == 0)
             {
-                Debug.WriteLine("All weights are zero");
-                return items.SelectRandomly(r);
+                throw new InvalidOperationException("All weights are zero");
             }
 
             var x = r.NextDouble() * sum;

@@ -127,11 +127,11 @@ namespace Composer
                 {
                     case 2:
                         var patterns2 = DuplePatterns.Where(p => (p.Type & where) > 0).ToArray();
-                        AddRandomPattern(result, patterns2.SelectRandomly(rand), step / 4);
+                        AddRandomPattern(result, rand.SelectRandomly(patterns2), step / 4);
                         break;
                     case 3:
                         var patterns3 = TriplePatterns.Where(p => (p.Type & where) > 0).ToArray();
-                        AddRandomPattern(result, patterns3.SelectRandomly(rand), step / 4);
+                        AddRandomPattern(result, rand.SelectRandomly(patterns3), step / 4);
                         break;
                     default:
                         result.Add(stepsToNext * step);

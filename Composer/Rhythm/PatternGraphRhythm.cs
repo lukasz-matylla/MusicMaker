@@ -191,7 +191,7 @@ namespace Composer
                 weights = weights.Mult(weightsToContrast);
             }
 
-            var result = availablePatterns.SelectRandomly(weights, rand);
+            var result = rand.SelectRandomly(availablePatterns, weights);
 
             if (!usedPatterns.Contains(result))
             {

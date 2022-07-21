@@ -1,4 +1,5 @@
 ﻿using Composer;
+using Composer.ChordProgression;
 using MusicCore;
 
 namespace MusicMaker
@@ -38,7 +39,8 @@ namespace MusicMaker
             };
 
             Console.WriteLine("Generating chord progression");
-            var chordGenerator = new GraphBasedChordProgression(chordGraph);
+            //var chordGenerator = new GraphBasedChordProgression(chordGraph);
+            var chordGenerator = new AdvancedFunctionalChordProgression(MusicalScale.Major, new ChordProgressionOptions(ChromaticApproach.StrictlyDiatonic));
             var chords = chordGenerator.GenerateProgression(par.PhraseLength);
 
             Console.WriteLine("Generating rhythm");

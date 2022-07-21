@@ -1,4 +1,5 @@
-﻿using MusicCore;
+﻿using Composer.ChordProgression;
+using MusicCore;
 
 namespace Composer
 {
@@ -77,7 +78,7 @@ namespace Composer
 
         protected virtual void AddTransitions()
         {
-            foreach (var chord in Chords)
+            foreach (var chord in Items)
             {
                 AddDirectVoiceLeadingTransitions(chord);
 
@@ -103,7 +104,7 @@ namespace Composer
                 {
                     var newChord = ChordOperations.ModifyChord(chord, i, interval, Scale);
 
-                    if (FindChordIndex(newChord) >= 0)
+                    if (FindItemIndex(newChord) >= 0)
                     {
                         AddTransition(chord, newChord);
                     }
@@ -128,7 +129,7 @@ namespace Composer
                     newChord = newChord.Inversion(3 - rootIndex);
                 }
                 
-                if (FindChordIndex(newChord) >= 0)
+                if (FindItemIndex(newChord) >= 0)
                 {
                     AddTransition(chord, newChord);
                     AddTransition(newChord, chord);
@@ -139,7 +140,7 @@ namespace Composer
         protected void ApplyTonicPreference()
         {
             var tonicChord = new Chord(0, 2, 4);
-            var tonicIndex = FindChordIndex(tonicChord);
+            var tonicIndex = FindItemIndex(tonicChord);
 
             foreach (var transition in transitions)
             {

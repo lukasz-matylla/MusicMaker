@@ -252,14 +252,14 @@ namespace Composer
         private void FillFirstMeasure(Staff target, ScaleStep[] notes, Chord chord, IReadOnlyList<Note> rhythm)
         {
             var weights = ApplyFilters(notes, strongNoteFilters, chord, null, null, false, 0, rhythm[0].StartTime, rhythm[0].EndTime);
-            var currentPitch = notes.SelectRandomly(weights, rand);
+            var currentPitch = rand.SelectRandomly(notes, weights);
             currentPitch = ApplyAccidental(currentPitch, chord);
             target.AddNote(0, rhythm[0].AtPitch(currentPitch));
 
             foreach (var note in rhythm.Skip(1).Where(n => n.Pitch.Step == 0))
             {
                 weights = ApplyFilters(notes, strongNoteFilters, chord, currentPitch, null, false, 0, note.StartTime, note.EndTime);
-                currentPitch = notes.SelectRandomly(weights, rand);
+                currentPitch = rand.SelectRandomly(notes, weights);
                 currentPitch = ApplyAccidental(currentPitch, chord);
                 target.AddNote(0, note.AtPitch(currentPitch));
             }
@@ -274,7 +274,7 @@ namespace Composer
             foreach (var note in rhythm.Where(n => n.Pitch.Step == 0))
             {
                 var weights = ApplyFilters(notes, strongNoteFilters, chord, currentPitch, null, false, measure, note.StartTime, note.EndTime);
-                currentPitch = notes.SelectRandomly(weights, rand);
+                currentPitch = rand.SelectRandomly(notes, weights);
                 currentPitch = ApplyAccidental(currentPitch, chord);
                 target.AddNote(measure, note.AtPitch(currentPitch));
             }
@@ -309,7 +309,7 @@ namespace Composer
                 foreach (var note in rhythm.Where(n => n.Pitch.Step == 0 && n.StartTime < lastBeat))
                 {
                     var weights = ApplyFilters(notes, strongNoteFilters, chord, currentPitch, finalPitch, true, measure, note.StartTime, note.EndTime);
-                    currentPitch = notes.SelectRandomly(weights, rand);
+                    currentPitch = rand.SelectRandomly(notes, weights);
                     currentPitch = ApplyAccidental(currentPitch, chord);
                     target.AddNote(measure, note.AtPitch(currentPitch));
                 }
@@ -334,7 +334,7 @@ namespace Composer
                 var after = target.NoteAfter(measure, note.StartTime);
 
                 var weights = ApplyFilters(notes, weakNoteFilters, chord, before?.Pitch, after?.Pitch, nextIsStrong, measure, note.StartTime, note.EndTime);
-                var currentPitch = notes.SelectRandomly(weights, rand);
+                var currentPitch = rand.SelectRandomly(notes, weights);
                 currentPitch = ApplyAccidental(currentPitch, chord);
 
                 target.AddNote(measure, note.AtPitch(currentPitch));

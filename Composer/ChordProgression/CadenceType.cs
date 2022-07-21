@@ -4,5 +4,5 @@
     Weak,
     Half,
     Loop,
-    None
+    Any
 }

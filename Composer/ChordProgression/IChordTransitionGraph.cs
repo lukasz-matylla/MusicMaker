@@ -1,14 +1,9 @@
 ﻿using MusicCore;
 
-namespace Composer
+namespace Composer.ChordProgression
 {
-    public interface IChordTransitionGraph
+    public interface IChordTransitionGraph : IFilteredTransitionGraph<Chord>
     {
-        IReadOnlyList<Chord> Chords { get; }
-        double[] WeightsFrom(int chord);
-        double[] WeightsFrom(Chord chord);
-        double[] WeightsTo(int chord);
-        double[] WeightsTo(Chord chord);
         MusicalScale Scale { get; }
     }
 }

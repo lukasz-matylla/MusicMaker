@@ -62,19 +62,38 @@ namespace MusicCore
             return aAsPitches.SequenceEqual(bAsPitches);
         }
 
-        public static ScaleStep DiatonicMove(ScaleStep step, ScaleInterval interval, MusicalScale scale)
+        public static ScaleStep DiatonicMove(ScaleStep step, ScaleInterval interval, MusicalScale scale, bool strict = true)
         {
             var movedBySteps = scale.ChangeBySteps(step, interval.Steps);
 
             var halftoneDifference = scale.HalftoneInterval(step, movedBySteps) - interval.Halftones;
             var modifier = (int)step.Accidental - halftoneDifference;
 
-            if (Math.Abs(modifier) <= 2)
-            {
-                return new ScaleStep(movedBySteps.Step, (Accidental)modifier);
-            }
 
-            throw new InvalidOperationException($"Diatonic movement of {step} by {interval} is impossible in scale {scale}");
+            if (strict)
+            {
+                if (Math.Abs(modifier) <= 2)
+                {
+                    return new ScaleStep(movedBySteps.Step, (Accidental)modifier);
+                }
+
+                throw new InvalidOperationException($"Strict diatonic movement of {step} by {interval} is impossible in scale {scale}");
+            }
+            else
+            {
+                if (Math.Abs(modifier) <= 1)
+                {
+                    return new ScaleStep(movedBySteps.Step, (Accidental)modifier);
+                }
+
+                var result = PitchToStep(scale.StepToPitch(step) + interval.Halftones, scale)?.WithOctave(0);
+                if (result == null)
+                {
+                    throw new InvalidOperationException($"Diatonic movement of {step} by {interval} is impossible in scale {scale} even with enharmonics");
+                }
+
+                return result;
+            }
         }
 
         public static Chord ModifyChord(Chord chord, int note, int halftoneInterval, MusicalScale scale)
@@ -84,14 +103,14 @@ namespace MusicCore
             return chord.WithChangedNote(note, n);
         }
 
-        public static Chord StackedIntervals(ScaleStep root, MusicalScale scale, params ScaleInterval[] intervals)
+        public static Chord StackedIntervals(ScaleStep root, MusicalScale scale, bool strict, params ScaleInterval[] intervals)
         {
             var notes = new List<ScaleStep>();
             notes.Add(root);
             var current = root;
             foreach (var interval in intervals)
             {
-                current = DiatonicMove(current, interval, scale);
+                current = DiatonicMove(current, interval, scale, strict);
                 notes.Add(current);
             }
 
@@ -109,7 +128,7 @@ namespace MusicCore
 
             if (root.Accidental == Accidental.None)
             {
-                return StackedIntervals(root, scale, intervals);
+                return StackedIntervals(root, scale, strict: false, intervals);
             }
 
             var sharpRoot = PitchToStep(halftoneRoot, scale, NoteIdentificationMode.SharpOnly);
@@ -122,18 +141,18 @@ namespace MusicCore
                     throw new InvalidOperationException("This case should be impossible");
                 }
 
-                return StackedIntervals(flatRoot, scale, intervals);
+                return StackedIntervals(flatRoot, scale, strict: false, intervals);
             }
             else
             {
                 if (flatRoot == null)
                 {
-                    return StackedIntervals(sharpRoot, scale, intervals);
+                    return StackedIntervals(sharpRoot, scale, strict: false, intervals);
                 }
                 else
                 {
-                    var chord1 = StackedIntervals(flatRoot, scale, intervals);
-                    var chord2 = StackedIntervals(sharpRoot, scale, intervals);
+                    var chord1 = StackedIntervals(flatRoot, scale, strict: false, intervals);
+                    var chord2 = StackedIntervals(sharpRoot, scale, strict: false, intervals);
 
                     var d = chord1.Notes.Sum(n => Math.Abs((int)n.Accidental)) - chord2.Notes.Sum(n => Math.Abs((int)n.Accidental));
 

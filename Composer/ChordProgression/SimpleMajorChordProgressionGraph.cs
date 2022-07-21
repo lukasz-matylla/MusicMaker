@@ -1,4 +1,5 @@
-﻿using MusicCore;
+﻿using Composer.ChordProgression;
+using MusicCore;
 
 namespace Composer
 {

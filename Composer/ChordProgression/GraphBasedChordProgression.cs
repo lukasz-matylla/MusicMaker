@@ -1,4 +1,5 @@
-﻿using MusicCore;
+﻿using Composer.ChordProgression;
+using MusicCore;
 using Tools;
 
 namespace Composer
@@ -67,7 +68,7 @@ namespace Composer
                     buffer[start + count - 1] = V;
                     break;
 
-                case CadenceType.None:
+                case CadenceType.Any:
                     buffer[start] = I;
                     GenerateForward(buffer, start + 1, count - 1);
                     break;
@@ -89,7 +90,7 @@ namespace Composer
         {
             var weights = transitions.WeightsFrom(before)
                 .Mult(transitions.WeightsTo(after));
-            var chord = transitions.Chords.SelectRandomly(weights, rand);
+            var chord = rand.SelectRandomly(transitions.Items, weights);
             buffer[pos] = chord;
         }
 
@@ -97,7 +98,7 @@ namespace Composer
         {
             for (var i = 0; i < count; i++)
             {
-                var chord = transitions.Chords.SelectRandomly(transitions.WeightsTo(buffer[start - i]), rand);
+                var chord = rand.SelectRandomly(transitions.Items, transitions.WeightsTo(buffer[start - i]));
                 buffer[start - 1 - i] = chord;
             }
         }
@@ -106,7 +107,7 @@ namespace Composer
         {
             for (var i = 0; i < count; i++)
             {
-                var chord = transitions.Chords.SelectRandomly(transitions.WeightsFrom(buffer[start - 1 + i]), rand);
+                var chord = rand.SelectRandomly(transitions.Items, transitions.WeightsFrom(buffer[start - 1 + i]));
                 buffer[start + i] = chord;
             }
         }

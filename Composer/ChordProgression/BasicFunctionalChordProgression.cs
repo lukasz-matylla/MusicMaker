@@ -93,7 +93,7 @@ namespace Composer
                     buffer[start + count - 1] = V;
                     break;
                 case CadenceType.Loop:
-                case CadenceType.None:
+                case CadenceType.Any:
                     GenerateTSDProgression(buffer, start, count);
                     break;
             }

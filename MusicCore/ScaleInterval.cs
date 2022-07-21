@@ -29,6 +29,7 @@ namespace MusicCore
         public static readonly ScaleInterval MinorSecond = new ScaleInterval(1, 1);
         public static readonly ScaleInterval MajorSecond = new ScaleInterval(1, 2);
 
+        public static readonly ScaleInterval DiminishedThird = new ScaleInterval(2, 2);
         public static readonly ScaleInterval MinorThird = new ScaleInterval(2, 3);
         public static readonly ScaleInterval MajorThird = new ScaleInterval(2, 4);
 
