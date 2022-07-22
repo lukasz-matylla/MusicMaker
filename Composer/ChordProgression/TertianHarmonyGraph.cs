@@ -3,7 +3,7 @@ using MusicCore;
 
 namespace Composer
 {
-    public class TertianHarmonyGraph : ChordTransitionGraph
+    public class AmbientHarmonyGraph : ChordTransitionGraph
     {
         protected readonly ScaleInterval[] Major = new[] { ScaleInterval.MajorThird, ScaleInterval.MinorThird };
         protected readonly ScaleInterval[] Minor = new[] { ScaleInterval.MinorThird, ScaleInterval.MajorThird };
@@ -23,7 +23,7 @@ namespace Composer
 
         public override MusicalScale Scale { get; }
 
-        public TertianHarmonyGraph(MusicalScale scale, ChromaticApproach chromaticApproach = ChromaticApproach.MostlyDiatonic, int tonicPreference = 4)
+        public AmbientHarmonyGraph(MusicalScale scale, ChromaticApproach chromaticApproach = ChromaticApproach.MostlyDiatonic, int tonicPreference = 4)
         {
             Scale = scale;
             this.chromaticApproach = chromaticApproach;
@@ -144,7 +144,7 @@ namespace Composer
 
             foreach (var transition in transitions)
             {
-                if (transition.To == tonicIndex)
+                if (transition.From == tonicIndex || transition.To == tonicIndex)
                 {
                     transition.Weight *= tonicPreference;
                 }

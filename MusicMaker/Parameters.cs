@@ -185,6 +185,7 @@ namespace MusicMaker
         Simple,
         Classic,
         Complex,
-        Free
+        Free,
+        Ambient
     }
 }

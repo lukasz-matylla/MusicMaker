@@ -333,6 +333,12 @@ namespace Composer.ChordProgression
                     .Where(c => c.Function.HasFlag(HarmonicFunction.DominantStrong) == strong.Value)
                     .ToArray();
             }
+            if (start < end)
+            {
+                finals = finals
+                    .Where(c => c.Function.HasFlag(HarmonicFunction.Dominant))
+                    .ToArray();
+            }
             progression[end] = rand.SelectRandomly(finals);
 
             if (start < end)
