@@ -185,6 +185,6 @@ namespace MusicMaker
         Simple,
         Classic,
         Complex,
-        Tertian
+        Free
     }
 }

@@ -64,7 +64,7 @@ namespace Composer
                     return nonDiatonic <= 1;
                 case ChromaticApproach.MostlyChromatic:
                     return diatonic > 0;
-                case ChromaticApproach.StrictlyChromatic:
+                case ChromaticApproach.Free:
                     return true;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(chromaticApproach));

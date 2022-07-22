@@ -1,4 +1,5 @@
 ﻿using MusicCore;
+using System.Diagnostics;
 using Tools;
 
 namespace Composer.ChordProgression
@@ -43,7 +44,7 @@ namespace Composer.ChordProgression
 
             if (!options.ForceNaturalMinor)
             {
-                result |= ChordFlags.ExtendedMinor;
+                result |= ChordFlags.MelodicMinor;
             }
 
             if (options.UseSecondaryDominants)
@@ -61,9 +62,9 @@ namespace Composer.ChordProgression
                 result |= ChordFlags.Neapolitan;
             }
 
-            if (options.UseAugmentedSixth)
+            if (options.UseExtendedChords)
             {
-                result |= ChordFlags.AugmentedSixth;
+                result |= ChordFlags.Extended;
             }
 
             if (options.UseChromaticMediants)
@@ -167,14 +168,24 @@ namespace Composer.ChordProgression
                 }
             }
 
+            LogChordProgression(progression);
             var result = RealizeChords(progression);
+            
             return result;
+        }
+
+        private void LogChordProgression(FlaggedAbstractChord[] progression)
+        {
+            foreach (var chord in progression)
+            {
+                Debug.WriteLine(chord);
+            }
         }
 
         private void GenerateAbstractProgression(FlaggedAbstractChord[] progression, int start, int end, CadenceType phraseCadence)
         {
             var initialTonic = rand.SelectRandomly(transitionGraph.FilteredItems(c => ChordFilter(c, HarmonicFunction.TonicInitial)));
-            var finalTonic = (initialTonic.Type != ChordType.Major && options.UsePiccardy) ? 
+            var finalTonic = (initialTonic.Type != ChordType.Major && initialTonic.Type != ChordType.Major7 && options.UsePiccardy) ? 
                 new FlaggedAbstractChord(0, ChordType.Major, 0) : 
                 initialTonic;
             var strongDominant = rand.SelectRandomly(transitionGraph.FilteredItems(c => ChordFilter(c, HarmonicFunction.DominantStrong)));
@@ -258,7 +269,7 @@ namespace Composer.ChordProgression
             var prev = start > 0 ? progression[start - 1] : null;
             var next = end < progression.Length - 1 ? progression[end + 1] : progression[0];
 
-            progression[end] = SelectPredominantFinal(start == end ? prev : null, next);
+            progression[end] = SelectPredominantFinal(start == end ? prev : null, next, start == end);
 
             if (start < end)
             {
@@ -273,7 +284,7 @@ namespace Composer.ChordProgression
 
         private FlaggedAbstractChord SelectPredominantInitial(FlaggedAbstractChord? prev, FlaggedAbstractChord last)
         {
-            var weights = transitionGraph.WeightsTo(last, c => ChordFilter(c, HarmonicFunction.PredominantInitial));
+            var weights = transitionGraph.WeightsTo(last, c => ChordFilter(c, HarmonicFunction.PredominantInitial | HarmonicFunction.Predominant));
 
             if (prev != null)
             {
@@ -284,9 +295,14 @@ namespace Composer.ChordProgression
             return result;
         }
 
-        private FlaggedAbstractChord SelectPredominantFinal(FlaggedAbstractChord? prev, FlaggedAbstractChord next)
+        private FlaggedAbstractChord SelectPredominantFinal(FlaggedAbstractChord? prev, FlaggedAbstractChord next, bool isAlsoInitial)
         {
-            var weights = transitionGraph.WeightsTo(next, c => ChordFilter(c, HarmonicFunction.PredominantFinal));
+            var function = HarmonicFunction.PredominantFinal;
+            if (isAlsoInitial)
+            {
+                function |= HarmonicFunction.PredominantInitial;
+            }
+            var weights = transitionGraph.WeightsTo(next, c => ChordFilter(c, function));
 
             if (prev != null)
             {
@@ -305,7 +321,12 @@ namespace Composer.ChordProgression
                 return;
             }
 
-            var finals = transitionGraph.FilteredItems(c => ChordFilter(c, HarmonicFunction.DominantFinal));
+            var function = HarmonicFunction.DominantFinal;
+            if (start == end)
+            {
+                function |= HarmonicFunction.DominantInitial;
+            }
+            var finals = transitionGraph.FilteredItems(c => ChordFilter(c, function));
             if (strong != null)
             {
                 finals = finals
@@ -316,7 +337,7 @@ namespace Composer.ChordProgression
 
             if (start < end)
             {
-                var initialWeights = transitionGraph.WeightsTo(progression[end], c => ChordFilter(c, HarmonicFunction.DominantInitial));
+                var initialWeights = transitionGraph.WeightsTo(progression[end], c => ChordFilter(c, HarmonicFunction.DominantInitial | HarmonicFunction.Dominant));
                 progression[start] = rand.SelectRandomly(transitionGraph.Items, initialWeights);
             }
 
@@ -374,7 +395,7 @@ namespace Composer.ChordProgression
                     {
                         var chord = AbstractToReal(input);
                         var prev = result[i - 1];
-                        var next = result[i + 1];
+                        var next = i < length - 1 ? result[i + 1] : result[0];
                         var inversion = MinimizeVoiceMovement(chord, prev, next);
                         result[i] = chord.Inversion(inversion);
                     }

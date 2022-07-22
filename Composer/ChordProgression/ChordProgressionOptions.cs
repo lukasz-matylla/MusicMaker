@@ -9,7 +9,7 @@
         public bool UseBorrowedChords { get; init; } = false; // includes IV in minor, iv in major, v in major etc.
         public bool UseSuspended { get; init; } = false;
         public bool UseNeapolitan { get; init; } = false;
-        public bool UseAugmentedSixth { get; init; } = false;
+        public bool UseExtendedChords { get; init; } = false;
         public bool UseFullyDiminished { get; init; } = false;
         public bool UseAugmentedChords { get; init; } = false;
         public bool UseChromaticMediants { get; init; } = false;
@@ -38,15 +38,14 @@
                     UseSecondaryDominants = true;
                     UseBorrowedChords = true;
                     UseNeapolitan = true;
-                    UseAugmentedSixth = true;
+                    UseExtendedChords = true;
                     UseFullyDiminished = true;
                     UseAugmentedChords = true;
                     break;
-                case ChromaticApproach.StrictlyChromatic:
+                case ChromaticApproach.Free:
                     UseSecondaryDominants = true;
                     UseBorrowedChords = true;
                     UseNeapolitan = true;
-                    UseAugmentedSixth = true;
                     UseFullyDiminished = true;
                     UseAugmentedChords = true;
                     UseChromaticMediants = true;

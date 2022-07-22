@@ -5,6 +5,6 @@
         StrictlyDiatonic,
         MostlyDiatonic,
         MostlyChromatic,
-        StrictlyChromatic
+        Free
     }
 }

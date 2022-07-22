@@ -12,5 +12,10 @@
             To = to;
             Weight = weight;
         }
+
+        public override string ToString()
+        {
+            return $"{From}->{To} (Weight)";
+        }
     }
 }

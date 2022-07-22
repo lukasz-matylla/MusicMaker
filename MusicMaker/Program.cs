@@ -34,13 +34,21 @@ namespace MusicMaker
                 Harmony.Complex => par.Scale == MusicalScale.Major ?
                     new ClassicalMajorChordProgressionGraphWithSecondaries() :
                     new ClassicalMinorChordProgressionGraphWithSecondaries(),
-                Harmony.Tertian => new TertianHarmonyGraph(par.Scale),
+                Harmony.Free => new TertianHarmonyGraph(par.Scale),
                 _ => throw new NotImplementedException()
             };
 
             Console.WriteLine("Generating chord progression");
             //var chordGenerator = new GraphBasedChordProgression(chordGraph);
-            var chordGenerator = new AdvancedFunctionalChordProgression(MusicalScale.Major, new ChordProgressionOptions(ChromaticApproach.StrictlyDiatonic));
+            var options = par.Harmony switch
+            {
+                Harmony.Simple => new ChordProgressionOptions(ChromaticApproach.StrictlyDiatonic),
+                Harmony.Classic => new ChordProgressionOptions(ChromaticApproach.MostlyDiatonic),
+                Harmony.Complex => new ChordProgressionOptions(ChromaticApproach.MostlyChromatic),
+                Harmony.Free => new ChordProgressionOptions(ChromaticApproach.Free),
+                _ => throw new ArgumentException($"Unknown harmony type: {par.Harmony}")
+            };
+            var chordGenerator = new AdvancedFunctionalChordProgression(MusicalScale.Major, options);
             var chords = chordGenerator.GenerateProgression(par.PhraseLength);
 
             Console.WriteLine("Generating rhythm");
@@ -68,7 +76,7 @@ namespace MusicMaker
                         .WithChromaticTransitions();
                     break;
                 case Harmony.Complex:
-                case Harmony.Tertian:
+                case Harmony.Free:
                     melodyMaker = melodyMaker
                         .WithChromaticTransitions()
                         .WithNctStrongBeats();

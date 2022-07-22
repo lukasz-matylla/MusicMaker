@@ -4,13 +4,13 @@
     internal enum ChordFlags
     {
         Diatonic = 0,
-        ExtendedMinor = 1,
+        MelodicMinor = 1,
         SecondaryDominant = 2,
         Borrowed = 4,
         Neapolitan = 8,
-        AugmentedSixth = 16,
-        ChromaticMediant = 128,
-        TritoneSubstitution = 256,
-        Altered = 512,
+        Extended = 16,
+        ChromaticMediant = 32,
+        TritoneSubstitution = 64,
+        Altered = 128,
     }
 }
