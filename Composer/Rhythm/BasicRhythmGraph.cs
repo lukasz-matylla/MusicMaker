@@ -2,18 +2,46 @@
 {
     public class BasicRhythmGraph : PatternGraphBase
     {
-        protected RhythmicPattern H = new RhythmicPattern(0, 8);
-        protected RhythmicPattern QQ = new RhythmicPattern(0, 4, 4);
+        #region duple
+        protected RhythmicPattern W = new RhythmicPattern(0, 8);
+        protected RhythmicPattern HH = new RhythmicPattern(0, 4, 4);
 
-        protected RhythmicPattern QdE = new RhythmicPattern(0.5, 6, 2);
-        protected RhythmicPattern QEE = new RhythmicPattern(0.5, 4, 2, 2);
-        protected RhythmicPattern EEEE = new RhythmicPattern(0.5, 2, 2, 2, 2);
+        protected RhythmicPattern HdQ = new RhythmicPattern(0.5, 6, 2);
+        protected RhythmicPattern HQQ = new RhythmicPattern(0.5, 4, 2, 2);
+        protected RhythmicPattern Q4 = new RhythmicPattern(0.5, 2, 2, 2, 2);
 
-        protected RhythmicPattern EQd = new RhythmicPattern(1, 2, 6);
-        protected RhythmicPattern EEQ = new RhythmicPattern(1, 2, 2, 4);
-        protected RhythmicPattern EQE = new RhythmicPattern(1, 2, 4, 2);
+        protected RhythmicPattern HdEE = new RhythmicPattern(1, 6, 1, 1);
+        protected RhythmicPattern HQEE = new RhythmicPattern(1, 4, 2, 1, 1);
+        protected RhythmicPattern QHd = new RhythmicPattern(1, 2, 6);
+        protected RhythmicPattern QQH = new RhythmicPattern(1, 2, 2, 4);
+        protected RhythmicPattern QQQdE = new RhythmicPattern(1, 2, 2, 3, 1);
 
+        protected RhythmicPattern HE4 = new RhythmicPattern(1.5, 4, 1, 1, 1, 1);
+        protected RhythmicPattern QdEH = new RhythmicPattern(1.5, 3, 1, 4);
+        protected RhythmicPattern QdEQQ = new RhythmicPattern(1.5, 3, 1, 2, 2);
+        protected RhythmicPattern QHQ = new RhythmicPattern(1.5, 2, 4, 2);
+        protected RhythmicPattern Q3EE = new RhythmicPattern(1.5, 2, 2, 2, 1, 1);
+        protected RhythmicPattern QEEH = new RhythmicPattern(1.5, 2, 1, 1, 4);
+        protected RhythmicPattern QEEQQ = new RhythmicPattern(1.5, 2, 1, 1, 2, 2);
+        protected RhythmicPattern QEEQEE = new RhythmicPattern(1.5, 2, 1, 1, 2, 1, 1);
 
+        protected RhythmicPattern QdEQdE = new RhythmicPattern(2, 3, 1, 3, 1);
+        protected RhythmicPattern QdQdQ = new RhythmicPattern(2, 3, 3, 2);
+        protected RhythmicPattern QdQdEE = new RhythmicPattern(2, 3, 3, 1, 1);
+        protected RhythmicPattern QdQQd = new RhythmicPattern(2, 3, 2, 3);
+        protected RhythmicPattern QQdQd = new RhythmicPattern(2, 2, 3, 3);
+        protected RhythmicPattern QE4Q = new RhythmicPattern(2, 2, 1, 1, 1, 1, 2);
+        protected RhythmicPattern QE6 = new RhythmicPattern(2, 2, 1, 1, 1, 1, 1, 1);
+        protected RhythmicPattern EEHd = new RhythmicPattern(2, 1, 1, 6);
+        protected RhythmicPattern E4H = new RhythmicPattern(2, 1, 1, 1, 1, 4);
+        protected RhythmicPattern E8 = new RhythmicPattern(2, 1, 1, 1, 1, 1, 1, 1, 1);
+
+        protected RhythmicPattern EEHEE = new RhythmicPattern(2.5, 1, 1, 4, 1, 1);
+        protected RhythmicPattern EEQQEE = new RhythmicPattern(2.5, 1, 1, 2, 2, 1, 1);
+        protected RhythmicPattern EEQEEQ = new RhythmicPattern(2.5, 1, 1, 2, 1, 1, 2);
+        #endregion
+
+        #region triple
         protected RhythmicPattern Hd = new RhythmicPattern(0, 12);
 
         protected RhythmicPattern HQ = new RhythmicPattern(0.5, 8, 4);
@@ -31,26 +59,24 @@
         protected RhythmicPattern EEH = new RhythmicPattern(2, 2, 2, 8);
         protected RhythmicPattern EEQQ = new RhythmicPattern(2, 2, 2, 4, 4);
         protected RhythmicPattern EEQEE = new RhythmicPattern(2, 2, 2, 4, 2, 2);
+        #endregion
 
         public BasicRhythmGraph() : base()
         {
             // Duple
-            AddSimilarity(H, QQ, 0.5);
-            AddSimilarity(H, QdE, 0.8);
+            AddSimilarity(W, HH, 0.5);
+            AddSimilarity(W, HdQ, 0.8);
+            AddSimilarity(W, HQQ, 0.5);
+            AddSimilarity(W, Q4, 0.5);
+            AddSimilarity(W, QHd, 0.3);
+            AddSimilarity(W, EEHd, 0.2);
 
-            AddSimilarity(QQ, QdE, 0.8);
-            AddSimilarity(QQ, QEE, 0.5);
-            AddSimilarity(QQ, EEQ, 0.5);
-            AddSimilarity(QQ, EQd, 0.5);
+            AddSimilarity(HH, HdQ, 0.8);
+            AddSimilarity(HH, HQQ, 0.5);
+            AddSimilarity(HH, QQH, 0.5);
+            AddSimilarity(HH, QHd, 0.3);
 
-            AddSimilarity(QdE, QEE, 0.8);
-
-            AddSimilarity(QEE, EEEE, 0.8);
-
-            AddSimilarity(EQd, EEQ, 0.8);
-            AddSimilarity(EQd, EQE, 0.8);
-
-            AddSimilarity(EEQ, EEEE, 0.8);
+            // to do
 
             // Triple
             AddSimilarity(Hd, HQ, 0.8);

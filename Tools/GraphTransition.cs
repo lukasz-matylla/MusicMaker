@@ -15,7 +15,7 @@
 
         public override string ToString()
         {
-            return $"{From}->{To} (Weight)";
+            return $"{From}->{To} ({Weight})";
         }
     }
 }

@@ -188,7 +188,12 @@ namespace Composer.ChordProgression
             var finalTonic = (initialTonic.Type != ChordType.Major && initialTonic.Type != ChordType.Major7 && options.UsePiccardy) ? 
                 new FlaggedAbstractChord(0, ChordType.Major, 0) : 
                 initialTonic;
-            var strongDominant = rand.SelectRandomly(transitionGraph.FilteredItems(c => ChordFilter(c, HarmonicFunction.DominantStrong)));
+            var strongDominants = transitionGraph.FilteredItems(c => ChordFilter(c, HarmonicFunction.DominantSolo | HarmonicFunction.DominantStrong));
+            if (strongDominants.Count == 0)
+            {
+                strongDominants = transitionGraph.FilteredItems(c => ChordFilter(c, HarmonicFunction.DominantSolo));
+            }
+            var strongDominant = rand.SelectRandomly(strongDominants);
 
             progression[start] = initialTonic;
 
@@ -320,37 +325,59 @@ namespace Composer.ChordProgression
             {
                 return;
             }
-
-            var function = HarmonicFunction.DominantFinal;
-            if (start == end)
-            {
-                function |= HarmonicFunction.DominantInitial;
-            }
-            var finals = transitionGraph.FilteredItems(c => ChordFilter(c, function));
-            if (strong != null)
-            {
-                finals = finals
-                    .Where(c => c.Function.HasFlag(HarmonicFunction.DominantStrong) == strong.Value)
-                    .ToArray();
-            }
-            if (start < end)
-            {
-                finals = finals
-                    .Where(c => c.Function.HasFlag(HarmonicFunction.Dominant))
-                    .ToArray();
-            }
-            progression[end] = rand.SelectRandomly(finals);
+                        
+            progression[end] = SelectDominantFinal(start == end, strong);
 
             if (start < end)
             {
-                var initialWeights = transitionGraph.WeightsTo(progression[end], c => ChordFilter(c, HarmonicFunction.DominantInitial | HarmonicFunction.Dominant));
-                progression[start] = rand.SelectRandomly(transitionGraph.Items, initialWeights);
+                var prev = start > 0 ? progression[start - 1] : null;
+                progression[start] = SelectDominantInitial(prev, progression[end]);
             }
 
             for (var i = end - 1; i > start; i--)
             {
                 FillMiddle(progression, i, HarmonicFunction.Dominant);
             }
+        }
+
+        private FlaggedAbstractChord SelectDominantInitial(FlaggedAbstractChord? prev, FlaggedAbstractChord last)
+        {
+            var weights = transitionGraph.WeightsTo(last, c => ChordFilter(c, HarmonicFunction.DominantInitial));
+
+            if (prev != null)
+            {
+                weights = weights.Mult(transitionGraph.WeightsFrom(prev, c => ChordFilter(c, HarmonicFunction.DominantInitial)));
+            }
+
+            var result = rand.SelectRandomly(transitionGraph.Items, weights);
+            return result;
+        }
+
+        private FlaggedAbstractChord SelectDominantFinal(bool isAlsoInitial, bool? strong)
+        {
+            var function = HarmonicFunction.DominantFinal;
+            if (isAlsoInitial)
+            {
+                function |= HarmonicFunction.DominantSolo;
+            }
+            else
+            {
+                function |= HarmonicFunction.Dominant;
+            }
+
+            var finals = transitionGraph.FilteredItems(c => ChordFilter(c, function));
+            var filteredFinals = finals;
+            if (strong != null)
+            {
+                filteredFinals = finals
+                    .Where(c => c.Function.HasFlag(HarmonicFunction.DominantStrong) == strong.Value)
+                    .ToArray();
+            }
+            
+            var result = filteredFinals.Any() ? 
+                rand.SelectRandomly(filteredFinals) : 
+                rand.SelectRandomly(finals);
+            return result;
         }
 
         private void FillMiddle(FlaggedAbstractChord[] progression, int i, HarmonicFunction function)

@@ -14,6 +14,7 @@
         Dominant = 128,
         DominantFinal = 256,
         DominantStrong = 512,
+        DominantSolo = 1024,
         AnyTonic = TonicInitial | Tonic | TonicFinal,
         AnyPredominant = PredominantInitial | Predominant | PredominantFinal,
         AnyDominant = DominantInitial | Dominant | DominantFinal,

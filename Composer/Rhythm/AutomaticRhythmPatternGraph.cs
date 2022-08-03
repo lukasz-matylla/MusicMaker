@@ -2,8 +2,8 @@
 {
     public class AutomaticRhythmPatternGraph : PatternGraphBase
     {
-        private const double close = 0.8;
-        private const double distant = 0.5;
+        private const double close = 0.6;
+        private const double distant = 0.2;
 
         public AutomaticRhythmPatternGraph()
             : base()
@@ -71,12 +71,12 @@
                     AddSimilarity(current, p, close);
                     yield return p;
 
-                    p = WithOneReplaced(current, i, beatHierarchy, len / 4, 3 * len / 4);
+                    /*p = WithOneReplaced(current, i, beatHierarchy, len / 4, 3 * len / 4);
                     AddSimilarity(current, p, distant);
-                    yield return p;
+                    yield return p;*/
                 }
 
-                if (len % 7 == 0)
+                /*if (len % 7 == 0)
                 {
                     var p = WithOneReplaced(current, i, beatHierarchy, 6 * len / 7, len / 7);
                     AddSimilarity(current, p, close);
@@ -85,10 +85,10 @@
                     p = WithOneReplaced(current, i, beatHierarchy, 4 * len / 3, 3 * len / 7);
                     AddSimilarity(current, p, close);
                     yield return p;
-                }
+                }*/
             }
 
-            for (var i = 0; i < current.Notes.Length - 1; i++)
+            /*for (var i = 0; i < current.Notes.Length - 1; i++)
             {
                 var len = current.Notes[i];
                 var next = current.Notes[i + 1];
@@ -129,7 +129,7 @@
                     AddSimilarity(current, p, distant);
                     yield return p;
                 }
-            }
+            }*/
         }
 
         private RhythmicPattern WithOneReplaced(RhythmicPattern source, int index, double[] beatHierarchy, int first, int second)
@@ -184,7 +184,7 @@
 
             if (patternLength == 12)
             {
-                return new[] { 0, 4, 2, 2, 0.7, 4, 1, 2, 0.5, 4, 1, 2 };
+                return new[] { 0, 4, 2, 2, 0.7, 4, 2, 3, 0.5, 4, 1, 2 };
             }
 
             return Enumerable.Repeat(1.0, patternLength).ToArray();

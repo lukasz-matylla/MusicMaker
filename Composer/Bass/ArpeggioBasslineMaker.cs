@@ -86,17 +86,29 @@ namespace Composer
                     break;
 
                 case ArpeggioPattern.UpDown:
-                    noteIndex %= 6;
-                    if (noteIndex >= 4)
+                    var len = GetSubdivision(noteCount, 8);
+                    noteIndex %= len;
+                    if (noteIndex >= len/2 + 1)
                     {
-                        noteIndex = 6 - noteIndex;
+                        noteIndex = len - noteIndex;
                     }
                     break;
             }
 
             return GetChordTone(chord, noteIndex, topOfStaff, octaveOffset);
         }
-    }
+
+        protected int GetSubdivision(int n, int max)
+        {
+            for (var i = 1; ; i++)
+            {
+                if (n / i <= max)
+                {
+                    return n / i;
+                }
+            }
+        }
+    } 
 
     public enum ArpeggioPattern
     {

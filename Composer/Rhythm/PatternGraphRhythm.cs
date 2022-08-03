@@ -9,6 +9,8 @@ namespace Composer
         public const int TriplePatternLength = 12;
         public const int MaxNotesInStep = 4;
 
+        private const double Sigma = 2;
+
         private readonly IRhythmicPatternGraph graph;
         private readonly double temperature;
         private readonly int preferredPatternNumber;
@@ -60,14 +62,16 @@ namespace Composer
             }
 
             var rhythms = new List<int[]>();
-            rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, 
+            var similarities = new double[graph.Patterns.Count];
+
+            rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, similarities, strongBeats, 
                 MeasureType.Opening, contrastTo?.Measures[0]));
             for (var i = 1; i < measures - 1; i++)
             {
-                rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, 
+                rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, similarities, strongBeats, 
                     MeasureType.Middle, contrastTo?.Measures[i % contrastTo.MeasureCount]));
             }
-            rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, strongBeats, 
+            rhythms.Add(MakeRhythm(meter.MeasureLength, step, usedPatterns, similarities, strongBeats, 
                 MeasureType.Closing, contrastTo?.Measures[(measures - 1) % contrastTo.MeasureCount]));
 
             for (var i = 0; i < measures; i++)
@@ -88,7 +92,7 @@ namespace Composer
             return result;
         }
 
-        private int[] MakeRhythm(int measureLength, int step, List<RhythmicPattern> usedPatterns, int[] strongBeats, MeasureType where,
+        private int[] MakeRhythm(int measureLength, int step, List<RhythmicPattern> usedPatterns, double[] similarities, int[] strongBeats, MeasureType where,
             IReadOnlyList<Note>? contrastTo = null)
         {
             var contrastPatterns = contrastTo != null ?
@@ -104,11 +108,11 @@ namespace Composer
                 switch (stepsToNext)
                 {
                     case 2:
-                        selectedElement = SelectElement(usedPatterns, where, false, contrastPatterns[i]);
+                        selectedElement = SelectElement(usedPatterns, similarities, where, false, contrastPatterns[i]);
                         AddElement(result, selectedElement, step / MaxNotesInStep);
                         break;
                     case 3:
-                        selectedElement = SelectElement(usedPatterns, where, true, contrastPatterns[i]);
+                        selectedElement = SelectElement(usedPatterns, similarities, where, true, contrastPatterns[i]);
                         AddElement(result, selectedElement, step / MaxNotesInStep);
                         break;
                     default:
@@ -148,54 +152,56 @@ namespace Composer
             return result.ToArray();
         }
 
-        private RhythmicPattern SelectElement(List<RhythmicPattern> usedPatterns, MeasureType where, bool isTriple, RhythmicPattern? contrastTo)
+        private RhythmicPattern SelectElement(List<RhythmicPattern> usedPatterns, double[] similarities, MeasureType where, bool isTriple, RhythmicPattern? contrastTo)
         {
             var temp = where switch
             {
-                MeasureType.Opening => temperature,
-                MeasureType.Middle => temperature * 1.5,
-                MeasureType.Closing => temperature * 0.5,
+                MeasureType.Opening => temperature * 0.7,
+                MeasureType.Middle => temperature,
+                MeasureType.Closing => temperature * 0.3,
                 _ => throw new NotImplementedException()
             };
 
             var patternLength = isTriple ? TriplePatternLength : DuplePatternLength;
 
-            var availablePatterns = graph.Patterns
-                .Where(e => e.Length == patternLength)
-                .ToArray();
-
-            var weights = availablePatterns
-                .Select(e => Math.Exp(-(e.Energy / temp)* (e.Energy / temp)))
+            var weights = graph.Patterns
+                .Select(e => e.Length == patternLength ? Math.Exp(-(e.Energy - temp) * (e.Energy - temp) / Sigma) : 0)
                 .ToArray();
 
             if (usedPatterns.Count < preferredPatternNumber)
             {
-                var weightsToAvoidRepeats = availablePatterns
-                    .Select(e => usedPatterns.Contains(e) ? avoidRepeats : 1.0)
+                var weightsToAvoidRepeats = graph.Patterns
+                    .Select(e => e.Length == patternLength && usedPatterns.Contains(e) ? avoidRepeats : 1.0)
                     .ToArray();
                 weights = weights.Mult(weightsToAvoidRepeats);
             }
             else
             {
-                var weightsToPreferSimilar = availablePatterns
-                    .Select(e => usedPatterns.Contains(e) ? 1.0 : usedPatterns.Max(p => graph.Similarity(e, p)))
-                    .ToArray();
-                weights = weights.Mult(weightsToPreferSimilar);
+                weights = weights.Mult(similarities);
             }
 
             if (contrastTo != null)
             {
-                var weightsToContrast = availablePatterns
-                    .Select(e => 1 - graph.Similarity(e, contrastTo))
+                var weightsToContrast = graph.Patterns
+                    .Select(e => e.Length == patternLength ? 1 - graph.Similarity(e, contrastTo) : 0)
                     .ToArray();
                 weights = weights.Mult(weightsToContrast);
             }
 
-            var result = rand.SelectRandomly(availablePatterns, weights);
+            var result = rand.SelectRandomly(graph.Patterns, weights);
 
             if (!usedPatterns.Contains(result))
             {
                 usedPatterns.Add(result);
+
+                for (var i = 0; i < similarities.Length; i++)
+                {
+                    var s = graph.Similarity(result, graph.Patterns[i]);
+                    if (s > similarities[i])
+                    {
+                        similarities[i] = s;
+                    }
+                }
             }
             
             return result;
