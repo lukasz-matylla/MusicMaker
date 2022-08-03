@@ -6,7 +6,7 @@
         public bool ForceNaturalMinor { get; init; } = false;
         public bool UsePiccardy { get; init; } = true;
         public bool UseSecondaryDominants { get; init; } = false; 
-        public bool UseBorrowedChords { get; init; } = false; // includes IV in minor, iv in major, v in major etc.
+        public bool UseBorrowedChords { get; init; } = false;
         public bool UseSuspended { get; init; } = false;
         public bool UseNeapolitan { get; init; } = false;
         public bool UseExtendedChords { get; init; } = false;

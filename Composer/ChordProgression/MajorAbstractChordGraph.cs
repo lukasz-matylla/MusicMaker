@@ -551,6 +551,8 @@ namespace Composer.ChordProgression
             AddTransition(IVmaj7x, IV7, 0.5);
             AddTransition(IVmaj7x, bVII, 0.5);
 
+            AddTransition(IV7, bVII);
+
             AddTransition(v, I, 3);
             AddTransition(v, Imaj7, 3);
             AddTransition(v, v);

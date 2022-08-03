@@ -14,6 +14,12 @@
             Function = HarmonicFunction.Tonic | HarmonicFunction.TonicFinal,
             Flags = ChordFlags.Diatonic
         };
+
+        protected readonly FlaggedAbstractChord I7 = new FlaggedAbstractChord(0, ChordType.Dominant7, null)
+        {
+            Function = HarmonicFunction.TonicFinal,
+            Flags = ChordFlags.SecondaryDominant
+        };
         #endregion
 
         #region II
@@ -34,6 +40,12 @@
             Function = HarmonicFunction.Predominant | HarmonicFunction.PredominantFinal,
             Flags = ChordFlags.MelodicMinor
         };
+
+        protected readonly FlaggedAbstractChord II7 = new FlaggedAbstractChord(1, ChordType.Dominant7, null)
+        {
+            Function = HarmonicFunction.PredominantFinal,
+            Flags = ChordFlags.SecondaryDominant
+        };
         #endregion
 
         #region III
@@ -41,6 +53,18 @@
         {
             Function = HarmonicFunction.Tonic | HarmonicFunction.TonicFinal,
             Flags = ChordFlags.Diatonic
+        };
+
+        protected readonly FlaggedAbstractChord iii = new FlaggedAbstractChord(2, ChordType.Minor, null)
+        {
+            Function = HarmonicFunction.Tonic | HarmonicFunction.TonicFinal,
+            Flags = ChordFlags.Borrowed
+        };
+
+        protected readonly FlaggedAbstractChord III7 = new FlaggedAbstractChord(2, ChordType.Dominant7, null)
+        {
+            Function = HarmonicFunction.Tonic,
+            Flags = ChordFlags.SecondaryDominant
         };
         #endregion
 
@@ -67,6 +91,12 @@
         {
             Function = HarmonicFunction.Predominant | HarmonicFunction.PredominantFinal,
             Flags = ChordFlags.MelodicMinor
+        };
+
+        protected readonly FlaggedAbstractChord IV7 = new FlaggedAbstractChord(3, ChordType.Dominant7, null)
+        {
+            Function = HarmonicFunction.PredominantFinal,
+            Flags = ChordFlags.SecondaryDominant
         };
         #endregion
 
@@ -122,8 +152,10 @@
             : base()
         {
             AddTransition(i, ix);
+            AddTransition(i, I7);
             AddTransition(i, ii0);
             AddTransition(i, ii);
+            AddTransition(i, iii);
             AddTransition(i, III);
             AddTransition(i, iv);
             AddTransition(i, IV);
@@ -134,7 +166,9 @@
             AddTransition(i, VII);
 
             AddTransition(ix, ix);
+            AddTransition(ix, I7);
             AddTransition(ix, ii0);
+            AddTransition(ix, iii);
             AddTransition(ix, III);
             AddTransition(ix, ii);
             AddTransition(ix, iv);
@@ -145,10 +179,15 @@
             AddTransition(ix, VI);
             AddTransition(ix, VII);
 
+            AddTransition(I7, iv, 3);
+            AddTransition(I7, IV, 3);
+
             AddTransition(ii0, i);
             AddTransition(ii0, ii0);
             AddTransition(ii0, ii);
             AddTransition(ii0, iix);
+            AddTransition(ii0, II7);
+            AddTransition(ii0, iii);
             AddTransition(ii0, III, 3);
             AddTransition(ii0, iv);
             AddTransition(ii0, ivx);
@@ -162,6 +201,7 @@
             AddTransition(ii, ii0);
             AddTransition(ii, ii);
             AddTransition(ii, iix);
+            AddTransition(ii, II7);
             AddTransition(ii, iv);
             AddTransition(ii, ivx);
             AddTransition(ii, IV);
@@ -174,6 +214,7 @@
             AddTransition(iix, ii0);
             AddTransition(iix, ii);
             AddTransition(iix, iix);
+            AddTransition(iix, II7);
             AddTransition(iix, iv);
             AddTransition(iix, ivx);
             AddTransition(iix, IV);
@@ -183,13 +224,33 @@
             AddTransition(iix, V7);
             AddTransition(iix, VII);
 
+            AddTransition(II7, v, 3);
+            AddTransition(II7, V, 3);
+            AddTransition(II7, V7);
+
             AddTransition(III, i);
+            AddTransition(III, I7);
             AddTransition(III, ix);
+            AddTransition(III, iii);
             AddTransition(III, III);
+            AddTransition(III, III7);
             AddTransition(III, VI, 3);
             AddTransition(III, v);
             AddTransition(III, V);
             AddTransition(III, V7);
+
+            AddTransition(iii, i);
+            AddTransition(iii, I7);
+            AddTransition(iii, ix);
+            AddTransition(iii, iii);
+            AddTransition(iii, III);
+            AddTransition(iii, III7);
+            AddTransition(iii, VI);
+            AddTransition(iii, v);
+            AddTransition(iii, V);
+            AddTransition(iii, V7);
+
+            AddTransition(III7, VI);
 
             AddTransition(iv, i);
             AddTransition(iv, ii0);
@@ -199,6 +260,7 @@
             AddTransition(iv, ivx);
             AddTransition(iv, IV);
             AddTransition(iv, IVx);
+            AddTransition(iv, IV7);
             AddTransition(iv, v);
             AddTransition(iv, V);
             AddTransition(iv, V7);
@@ -212,6 +274,7 @@
             AddTransition(ivx, ivx);
             AddTransition(ivx, IV);
             AddTransition(ivx, IVx);
+            AddTransition(ivx, IV7);
             AddTransition(ivx, v);
             AddTransition(ivx, V);
             AddTransition(ivx, V7);
@@ -225,6 +288,7 @@
             AddTransition(IV, ivx);
             AddTransition(IV, IV);
             AddTransition(IV, IVx);
+            AddTransition(IV, IV7);
             AddTransition(IV, v);
             AddTransition(IV, V);
             AddTransition(IV, V7);
@@ -238,10 +302,13 @@
             AddTransition(IVx, ivx);
             AddTransition(IVx, IV);
             AddTransition(IVx, IVx);
+            AddTransition(IVx, IV7);
             AddTransition(IVx, v);
             AddTransition(IVx, V);
             AddTransition(IVx, V7);
             AddTransition(IVx, VII);
+
+            AddTransition(IV7, VII, 3);
 
             AddTransition(v, i);
             AddTransition(v, v);
@@ -279,9 +346,11 @@
             AddTransition(V7, V7);
 
             AddTransition(VI, i);
+            AddTransition(VI, I7);
             AddTransition(VI, ix);
             AddTransition(VI, ii0);
             AddTransition(VI, ii);
+            AddTransition(VI, iii);
             AddTransition(VI, III);
             AddTransition(VI, iv);
             AddTransition(VI, IV);
