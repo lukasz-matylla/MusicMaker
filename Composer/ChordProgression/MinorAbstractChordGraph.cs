@@ -1,4 +1,6 @@
-﻿namespace Composer.ChordProgression
+﻿using MusicCore;
+
+namespace Composer.ChordProgression
 {
     internal class MinorAbstractChordGraph : AbstractChordGraph
     {
@@ -19,6 +21,14 @@
         {
             Function = HarmonicFunction.TonicFinal,
             Flags = ChordFlags.SecondaryDominant
+        };
+        #endregion
+
+        #region bII
+        protected readonly FlaggedAbstractChord N = new FlaggedAbstractChord(new ScaleStep(1, Accidental.Flat), ChordType.Major, 1)
+        {
+            Function = HarmonicFunction.PredominantInitial | HarmonicFunction.PredominantFinal,
+            Flags = ChordFlags.Neapolitan
         };
         #endregion
 
@@ -98,6 +108,8 @@
             Function = HarmonicFunction.PredominantFinal,
             Flags = ChordFlags.SecondaryDominant
         };
+
+        
         #endregion
 
         #region V
@@ -153,6 +165,7 @@
         {
             AddTransition(i, ix);
             AddTransition(i, I7);
+            AddTransition(i, N);
             AddTransition(i, ii0);
             AddTransition(i, ii);
             AddTransition(i, iii);
@@ -167,6 +180,7 @@
 
             AddTransition(ix, ix);
             AddTransition(ix, I7);
+            AddTransition(ix, N);
             AddTransition(ix, ii0);
             AddTransition(ix, iii);
             AddTransition(ix, III);
@@ -182,7 +196,12 @@
             AddTransition(I7, iv, 3);
             AddTransition(I7, IV, 3);
 
+            AddTransition(N, v, 3);
+            AddTransition(N, V);
+            AddTransition(N, V7, 3);
+
             AddTransition(ii0, i);
+            AddTransition(ii0, N);
             AddTransition(ii0, ii0);
             AddTransition(ii0, ii);
             AddTransition(ii0, iix);
@@ -198,6 +217,7 @@
             AddTransition(ii0, V7);
             AddTransition(ii0, VII);
 
+            AddTransition(ii, N);
             AddTransition(ii, ii0);
             AddTransition(ii, ii);
             AddTransition(ii, iix);
@@ -211,6 +231,7 @@
             AddTransition(ii, V7);
             AddTransition(ii, VII);
 
+            AddTransition(iix, N);
             AddTransition(iix, ii0);
             AddTransition(iix, ii);
             AddTransition(iix, iix);
@@ -253,6 +274,7 @@
             AddTransition(III7, VI);
 
             AddTransition(iv, i);
+            AddTransition(iv, N);
             AddTransition(iv, ii0);
             AddTransition(iv, ii);
             AddTransition(iv, iix);
@@ -267,6 +289,7 @@
             AddTransition(iv, VII);
 
             AddTransition(ivx, i);
+            AddTransition(ivx, N);
             AddTransition(ivx, ii0);
             AddTransition(ivx, ii);
             AddTransition(ivx, iix);
