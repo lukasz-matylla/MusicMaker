@@ -22,6 +22,13 @@ namespace Composer.ChordProgression
             Function = HarmonicFunction.TonicFinal,
             Flags = ChordFlags.SecondaryDominant
         };
+
+        protected readonly FlaggedAbstractChord i64 = new FlaggedAbstractChord(0, ChordType.Minor, 2)
+        {
+            Function = HarmonicFunction.DominantInitial,
+            Flags = ChordFlags.Diatonic
+        };
+
         #endregion
 
         #region bII
@@ -165,6 +172,7 @@ namespace Composer.ChordProgression
         {
             AddTransition(i, ix);
             AddTransition(i, I7);
+            AddTransition(i, i64);
             AddTransition(i, N);
             AddTransition(i, ii0);
             AddTransition(i, ii);
@@ -180,6 +188,7 @@ namespace Composer.ChordProgression
 
             AddTransition(ix, ix);
             AddTransition(ix, I7);
+            AddTransition(ix, i64);
             AddTransition(ix, N);
             AddTransition(ix, ii0);
             AddTransition(ix, iii);
@@ -196,11 +205,17 @@ namespace Composer.ChordProgression
             AddTransition(I7, iv, 3);
             AddTransition(I7, IV, 3);
 
+            AddTransition(i64, v);
+            AddTransition(i64, V, 3);
+            AddTransition(i64, V7, 3);
+
+            AddTransition(N, i64);
             AddTransition(N, v, 3);
             AddTransition(N, V);
             AddTransition(N, V7, 3);
 
             AddTransition(ii0, i);
+            AddTransition(ii0, i64);
             AddTransition(ii0, N);
             AddTransition(ii0, ii0);
             AddTransition(ii0, ii);
@@ -217,6 +232,7 @@ namespace Composer.ChordProgression
             AddTransition(ii0, V7);
             AddTransition(ii0, VII);
 
+            AddTransition(ii, i64, 3);
             AddTransition(ii, N);
             AddTransition(ii, ii0);
             AddTransition(ii, ii);
@@ -227,10 +243,11 @@ namespace Composer.ChordProgression
             AddTransition(ii, IV);
             AddTransition(ii, IVx);
             AddTransition(ii, v);
-            AddTransition(ii, V);
-            AddTransition(ii, V7);
+            AddTransition(ii, V, 3);
+            AddTransition(ii, V7, 3);
             AddTransition(ii, VII);
 
+            AddTransition(iix, i64, 3);
             AddTransition(iix, N);
             AddTransition(iix, ii0);
             AddTransition(iix, ii);
@@ -241,10 +258,11 @@ namespace Composer.ChordProgression
             AddTransition(iix, IV);
             AddTransition(iix, IVx);
             AddTransition(iix, v);
-            AddTransition(iix, V);
-            AddTransition(iix, V7);
+            AddTransition(iix, V, 3);
+            AddTransition(iix, V7, 3);
             AddTransition(iix, VII);
 
+            AddTransition(II7, i64, 3);
             AddTransition(II7, v, 3);
             AddTransition(II7, V, 3);
             AddTransition(II7, V7);
@@ -274,6 +292,7 @@ namespace Composer.ChordProgression
             AddTransition(III7, VI);
 
             AddTransition(iv, i);
+            AddTransition(iv, i64, 3);
             AddTransition(iv, N);
             AddTransition(iv, ii0);
             AddTransition(iv, ii);
@@ -283,12 +302,13 @@ namespace Composer.ChordProgression
             AddTransition(iv, IV);
             AddTransition(iv, IVx);
             AddTransition(iv, IV7);
-            AddTransition(iv, v);
-            AddTransition(iv, V);
-            AddTransition(iv, V7);
+            AddTransition(iv, v, 3);
+            AddTransition(iv, V, 3);
+            AddTransition(iv, V7, 3);
             AddTransition(iv, VII);
 
             AddTransition(ivx, i);
+            AddTransition(ivx, i64, 3);
             AddTransition(ivx, N);
             AddTransition(ivx, ii0);
             AddTransition(ivx, ii);
@@ -299,11 +319,12 @@ namespace Composer.ChordProgression
             AddTransition(ivx, IVx);
             AddTransition(ivx, IV7);
             AddTransition(ivx, v);
-            AddTransition(ivx, V);
-            AddTransition(ivx, V7);
+            AddTransition(ivx, V, 3);
+            AddTransition(ivx, V7, 3);
             AddTransition(ivx, VII);
 
             AddTransition(IV, i);
+            AddTransition(IV, i64, 3);
             AddTransition(IV, ii0);
             AddTransition(IV, ii);
             AddTransition(IV, iix);
@@ -313,11 +334,12 @@ namespace Composer.ChordProgression
             AddTransition(IV, IVx);
             AddTransition(IV, IV7);
             AddTransition(IV, v);
-            AddTransition(IV, V);
-            AddTransition(IV, V7);
+            AddTransition(IV, V, 3);
+            AddTransition(IV, V7, 3);
             AddTransition(IV, VII);
 
             AddTransition(IVx, i);
+            AddTransition(IVx, i64, 3);
             AddTransition(IVx, ii0);
             AddTransition(IVx, ii);
             AddTransition(IVx, iix);
@@ -327,8 +349,8 @@ namespace Composer.ChordProgression
             AddTransition(IVx, IVx);
             AddTransition(IVx, IV7);
             AddTransition(IVx, v);
-            AddTransition(IVx, V);
-            AddTransition(IVx, V7);
+            AddTransition(IVx, V, 3);
+            AddTransition(IVx, V7, 3);
             AddTransition(IVx, VII);
 
             AddTransition(IV7, VII, 3);
