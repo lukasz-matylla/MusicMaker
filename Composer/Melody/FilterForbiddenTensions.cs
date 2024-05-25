@@ -17,7 +17,7 @@ namespace Composer.Melody
             int startTime, 
             int endTime)
         {
-            if (chord.Notes.Any(n => Scale.NormalizedHalftoneInterval(n, thisNote) == 1))
+            if (chord.Notes.Any(n => Scale.NormalizedHalftoneInterval(n, thisNote) == 1 || Scale.NormalizedHalftoneInterval(thisNote, n) == 1))
             {
                 return Cutoff;
             }
