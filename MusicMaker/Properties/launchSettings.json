@@ -2,7 +2,7 @@
   "profiles": {
     "MusicMaker": {
       "commandName": "Project",
-      "commandLineArgs": " -o MagnumOpus -k major -n c -h classic -b rhythmic -m 4/4 -t 140 -r 16 -l 3 -e 0.8"
+      "commandLineArgs": " -o MagnumOpus -k major -n c -h classic -b arpeggio -m 4/4 -t 140 -r 16 -l 3 -e 0.1"
     }
   }
 }

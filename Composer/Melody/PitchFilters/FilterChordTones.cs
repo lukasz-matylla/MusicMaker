@@ -1,10 +1,10 @@
 ﻿using MusicCore;
 
-namespace Composer.Melody
+namespace Composer.Melody.PitchFilters
 {
-    public class FilterForbiddenTensions : PitchFilterBase
+    public class FilterChordTones : PitchFilterBase
     {
-        public FilterForbiddenTensions(double cutoff = 0.2)
+        public FilterChordTones(double cutoff = 0.0)
             : base(cutoff)
         { }
 
@@ -17,12 +17,12 @@ namespace Composer.Melody
             int startTime, 
             int endTime)
         {
-            if (chord.Notes.Any(n => Scale.NormalizedHalftoneInterval(n, thisNote) == 1 || Scale.NormalizedHalftoneInterval(thisNote, n) == 1))
+            if (chord.Notes.Any(n => n.Step == thisNote.Step && n.Accidental == thisNote.Accidental))
             {
-                return Cutoff;
+                return 1.0;
             }
 
-            return 1.0;
+            return Cutoff;
         }
     }
 }

@@ -171,7 +171,7 @@ namespace MusicCore
         {
             if (measure < 0 || measure >= MeasureCount)
             {
-                return new Note[0];
+                return Array.Empty<Note>();
             }
 
             return Measures[measure]

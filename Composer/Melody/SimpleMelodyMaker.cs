@@ -1,4 +1,4 @@
-﻿using Composer.Melody;
+﻿using Composer.Melody.PitchFilters;
 using MusicCore;
 using System.Diagnostics;
 using Tools;
@@ -44,15 +44,17 @@ namespace Composer
             {
                 new FilterInsideStaff(),
                 new FilterChordTones(),
+                new FilterLimitSkip(6),
+                new FilterAvoidRepeats(),
                 new FilterCloseToNeighbors(),
-                new FilterAvoidRepeats()
             };
 
             weakNoteFilters = new List<IPitchFilter>()
             {
                 new FilterInsideStaff(),
-                new FilterAvoidRepeats(),
+                new FilterLimitSkip(6),
                 new FilterForbiddenTensions(),
+                new FilterAvoidRepeats(),
                 new FilterSmoothTransition()
             };
         }
@@ -227,11 +229,18 @@ namespace Composer
             int endTime)
         {
             var weights = Enumerable.Repeat(1.0, notes.Length).ToArray();
+            var mults = new Dictionary<string, double[]>();
 
             foreach (var filter in filters)
             {
                 var fromFilter = filter.GetWeights(chord, previousNote, nextNote, nextIsStrong, measure, startTime, endTime);
-                weights = weights.Mult(fromFilter);
+                mults.Add(filter.GetType().Name, fromFilter);
+                var newWeights = weights.Mult(fromFilter);
+                if (newWeights.Max() <= 0)
+                {
+                    throw new InvalidOperationException($"All weights are zero after applying filter {filter.GetType().Name}.");
+                }
+                weights = newWeights;
             }
 
             return weights;
@@ -367,19 +376,9 @@ namespace Composer
 
         private ScaleStep ApplyChromaticModification(ScaleStep before, ScaleStep current, ScaleStep after)
         {
-            // Chromatic neighbor
-            if (before.Equals(current) && after.Equals(current))
-            {
-                var delta = rand.Next(2) * 2 - 1;
-                var target = scale.ChangeBySteps(current, delta);
-                var distance = scale.HalftoneInterval(current, target);
-                var neighbor = scale.ChangeByHalftones(target, distance + delta);
-                return neighbor;
-            }
-
             // Chromatic passing tone
             var stepToNext = scale.HalftoneInterval(before, after);
-            if (Math.Abs(stepToNext) == 2)
+            if (before.Equals(current) && Math.Abs(stepToNext) == 2)
             {
                 var change = stepToNext / 2;
                 return scale.ChangeByHalftones(before, change);

@@ -1,6 +1,6 @@
 ﻿using MusicCore;
 
-namespace Composer.Melody
+namespace Composer.Melody.PitchFilters
 {
     public interface IPitchFilter
     {

@@ -1,5 +1,5 @@
 ﻿using MusicCore;
-namespace Composer.Melody
+namespace Composer.Melody.PitchFilters
 {
     public class FilterRelative : PitchFilterBase
     {
@@ -35,7 +35,7 @@ namespace Composer.Melody
                 var threshold = otherPitches.Max();
 
                 if (thisPitch > threshold ||
-                    (thisPitch == threshold && allowEqual))
+                    thisPitch == threshold && allowEqual)
                 {
                     return 1.0;
                 }
@@ -45,7 +45,7 @@ namespace Composer.Melody
                 var threshold = otherPitches.Min();
 
                 if (thisPitch < threshold ||
-                    (thisPitch == threshold && allowEqual))
+                    thisPitch == threshold && allowEqual)
                 {
                     return 1.0;
                 }

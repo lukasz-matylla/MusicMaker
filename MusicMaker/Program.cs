@@ -60,7 +60,7 @@ namespace MusicMaker
             var chords = chordGenerator.GenerateProgression(par.PhraseLength);
 
             Console.WriteLine("Generating rhythm");
-            var rhythmGenerator = new BasicRhythm();
+            var rhythmGenerator = new BasicRhythm(par.Temperature);
             var rhythm = rhythmGenerator.CreateRhythm(par.PhraseLength, par.Meter);
             
             var parts = new List<Staff>();

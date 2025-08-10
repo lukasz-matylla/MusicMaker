@@ -1,12 +1,16 @@
 ﻿using MusicCore;
 
-namespace Composer.Melody
+namespace Composer.Melody.PitchFilters
 {
     public class FilterAvoidRepeats : PitchFilterBase
     {
-        public FilterAvoidRepeats(double cutoff = 0.2) 
+        public double CutoffBeforeStrong { get; }
+
+        public FilterAvoidRepeats(double cutoff = 0.3, double cutoffBeforeStrong = 0.1)
             : base(cutoff)
-        { }
+        {
+            CutoffBeforeStrong = cutoffBeforeStrong;
+        }
 
         protected override double GetWeight(ScaleStep thisNote, 
             Chord chord, 
@@ -26,7 +30,14 @@ namespace Composer.Melody
 
             if (nextNote != null && nextNote.Equals(thisNote))
             {
-                result *= Cutoff;
+                if (nextIsStrong)
+                {
+                    result *= CutoffBeforeStrong;
+                }
+                else
+                {
+                    result *= Cutoff;
+                }
             }
 
             return result;

@@ -1,6 +1,6 @@
 ﻿using MusicCore;
 
-namespace Composer.Melody
+namespace Composer.Melody.PitchFilters
 {
     public abstract class PitchFilterBase : IPitchFilter
     {
@@ -12,7 +12,7 @@ namespace Composer.Melody
 
         protected PitchFilterBase(double cutoff)
         {
-            AvailableNotes = new ScaleStep[0];
+            AvailableNotes = Array.Empty<ScaleStep>();
             Scale = MusicalScale.Major;
 
             Cutoff = cutoff;

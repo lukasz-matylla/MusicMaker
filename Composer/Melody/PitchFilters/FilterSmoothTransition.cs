@@ -1,6 +1,6 @@
 ﻿using MusicCore;
 
-namespace Composer.Melody
+namespace Composer.Melody.PitchFilters
 {
     public class FilterSmoothTransition : PitchFilterBase
     {
@@ -40,14 +40,8 @@ namespace Composer.Melody
                 return Math.Pow(Cutoff, Math.Abs(beforeInterval)) * Math.Pow(DistantCutoff, Math.Abs(afterInterval));
             }
 
-            if (Math.Abs(Scale.StepInterval(previousNote, nextNote)) == 0 &&
-                Math.Abs(Scale.StepInterval(thisNote, nextNote)) == 1)
-            {
-                return 1.0;
-            }
-
-            if (Math.Abs(Scale.StepInterval(previousNote, nextNote)) == 1 &&
-                Math.Abs(Scale.StepInterval(thisNote, nextNote)) == 1)
+            if (Math.Abs(Scale.StepInterval(previousNote, nextNote)) <= 1 &&
+                Math.Abs(Scale.StepInterval(thisNote, nextNote)) <= 1)
             {
                 return 1.0;
             }
@@ -55,6 +49,16 @@ namespace Composer.Melody
             if (beforeInterval * afterInterval > 0)
             {
                 return Math.Max(Math.Pow(Cutoff, Math.Abs(beforeInterval)), Math.Pow(Cutoff, Math.Abs(afterInterval)));
+            }
+
+            if (Math.Abs(beforeInterval) == 1)
+            {
+                return Math.Pow(Cutoff, Math.Abs(afterInterval));
+            }
+
+            if (Math.Abs(afterInterval) == 1)
+            {
+                return Math.Pow(Cutoff, Math.Abs(beforeInterval));
             }
 
             return 0.0;

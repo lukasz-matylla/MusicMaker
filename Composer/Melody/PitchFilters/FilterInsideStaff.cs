@@ -1,6 +1,6 @@
 ﻿using MusicCore;
 
-namespace Composer.Melody
+namespace Composer.Melody.PitchFilters
 {
     public class FilterInsideStaff : PitchFilterBase
     {
@@ -9,7 +9,7 @@ namespace Composer.Melody
         private int topPitch;
         private int bottomPitch;
         
-        public FilterInsideStaff(int allowedLedgers = 1, double cutoff = 0.5)
+        public FilterInsideStaff(int allowedLedgers = 1, double cutoff = 0.0)
             : base(cutoff)
         {
             this.allowedLedgers = allowedLedgers;
