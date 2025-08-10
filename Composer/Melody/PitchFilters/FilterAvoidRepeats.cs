@@ -6,7 +6,7 @@ namespace Composer.Melody.PitchFilters
     {
         public double CutoffBeforeStrong { get; }
 
-        public FilterAvoidRepeats(double cutoff = 0.3, double cutoffBeforeStrong = 0.1)
+        public FilterAvoidRepeats(double cutoff = 0.2, double cutoffBeforeStrong = 0.05)
             : base(cutoff)
         {
             CutoffBeforeStrong = cutoffBeforeStrong;

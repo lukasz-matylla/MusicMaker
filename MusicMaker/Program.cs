@@ -110,7 +110,7 @@ namespace MusicMaker
                     name += ".musicxml";
                 }
                 var mx = new MusicXml();
-                Console.WriteLine($"Writing composition to {name}");
+                Console.WriteLine($"Writing composition to {Directory.GetCurrentDirectory() + "\\" + name}");
                 mx.WriteToFile(name, parts.ToArray());
             }
 
