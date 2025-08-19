@@ -30,7 +30,7 @@ namespace Composer
             rand = new Random();
 
             rhythm = CreateDefaultRhythm();
-            chords = new[] { new Chord(0, 2, 4) };
+            chords = [new Chord(0, 2, 4)];
             key = Key.C;
             scale = MusicalScale.Major;
             clef = Clef.Treble;
@@ -363,7 +363,12 @@ namespace Composer
                 var current = target.NoteAt(measure, note.StartTime);
                 var after = target.NoteAfter(measure, note.StartTime);
 
-                if (before != null && current != null && after != null)
+                var nextStrong = rhythm.FirstOrDefault(n => n.Pitch.Step == 0 && n.StartTime > note.StartTime);
+                var nextWeak = rhythm.FirstOrDefault(n => n.Pitch.Step > 0 && n.StartTime > note.StartTime);
+                var nextIsStrong =
+                    nextWeak == null || (nextStrong != null && nextStrong.StartTime < nextWeak.StartTime);
+
+                if (before != null && current != null && after != null && nextIsStrong)
                 {
                     var newPitch = ApplyChromaticModification(before.Pitch, current.Pitch, after.Pitch);
                     if (!newPitch.Equals(current.Pitch))
