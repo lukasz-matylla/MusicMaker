@@ -6,7 +6,7 @@ namespace Composer.Melody.PitchFilters
     {
         public double CutoffBeforeStrong { get; }
 
-        public FilterAvoidRepeats(double cutoff = 0.2, double cutoffBeforeStrong = 0.05)
+        public FilterAvoidRepeats(double cutoff = 0.7, double cutoffBeforeStrong = 0.05)
             : base(cutoff)
         {
             CutoffBeforeStrong = cutoffBeforeStrong;
@@ -14,6 +14,7 @@ namespace Composer.Melody.PitchFilters
 
         protected override double GetWeight(ScaleStep thisNote, 
             Chord chord, 
+            Chord? nextChord,
             ScaleStep? previousNote, 
             ScaleStep? nextNote, 
             bool nextIsStrong, 

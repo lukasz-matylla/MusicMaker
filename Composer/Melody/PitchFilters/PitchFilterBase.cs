@@ -26,21 +26,23 @@ namespace Composer.Melody.PitchFilters
             Clef = clef;
         }
 
-        public virtual double[] GetWeights(Chord chord, 
+        public virtual double[] GetWeights(Chord chord,
+            Chord? nextChord,
             ScaleStep? previousNote, 
             ScaleStep? nextNote, 
-            bool nextIsStrong, 
+            bool nextIsStrong,
             int measure, 
             int startTime, 
             int endTime)
         {
             return AvailableNotes
-                .Select(note => GetWeight(note, chord, previousNote, nextNote, nextIsStrong, measure, startTime, endTime))
+                .Select(note => GetWeight(note, chord, nextChord, previousNote, nextNote, nextIsStrong, measure, startTime, endTime))
                 .ToArray();
         }
 
         protected abstract double GetWeight(ScaleStep thisNote,
             Chord chord,
+            Chord? nextChord,
             ScaleStep? previousNote,
             ScaleStep? nextNote,
             bool nextIsStrong,

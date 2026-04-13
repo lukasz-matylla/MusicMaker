@@ -4,12 +4,11 @@ namespace MusicMaker
 {
     public class BassMakerFactory
     {
-        public IBasslineMaker? CreateBassMaker(BassType bassType, ArpeggioPattern bassPattern)
+        public IBasslineMaker CreateBassMaker(BassType bassType, ArpeggioPattern bassPattern)
         {
             switch (bassType)
             {
-                case BassType.None:
-                    return null;
+                // TODO: add NoneBasslineMaker that generates empty staff
                 case BassType.Simple:
                     return new SimpleBasslineMaker();
                 case BassType.Rhythmic:

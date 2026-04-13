@@ -4,16 +4,13 @@ namespace Composer.Melody.PitchFilters
 {
     public class FilterForbiddenTensions : PitchFilterBase
     {
-        private readonly double softCutoff;
-
-        public FilterForbiddenTensions(double cutoff = 0.0, double softCutoff = 0.1)
+        public FilterForbiddenTensions(double cutoff = 0.0)
             : base(cutoff)
-        {
-            this.softCutoff = softCutoff;
-        }
+        { }
 
         protected override double GetWeight(ScaleStep thisNote, 
-            Chord chord, 
+            Chord chord,
+            Chord? nextChord,
             ScaleStep? previousNote, 
             ScaleStep? nextNote, 
             bool nextIsStrong, 
@@ -21,7 +18,7 @@ namespace Composer.Melody.PitchFilters
             int startTime, 
             int endTime)
         {
-            if (chord.Notes.Any(n => n.Step == thisNote.Step))
+            if (chord.Notes.Any(n => n.Step == thisNote.Step && n.Accidental == thisNote.Accidental))
             {
                 return 1.0; // Chord tones are always allowed
             }
@@ -46,7 +43,7 @@ namespace Composer.Melody.PitchFilters
             if (!chord.Notes.Any(n => Scale.NormalizedHalftoneInterval(n, thisNote) == 0)
                 && chord.Notes.Any(n => Scale.NormalizedHalftoneInterval(n, thisNote) == 6))
             {
-                return softCutoff;
+                return Cutoff;
             }
 
             return 1.0;

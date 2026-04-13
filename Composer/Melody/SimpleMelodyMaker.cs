@@ -2,6 +2,7 @@
 using MusicCore;
 using System.Diagnostics;
 using Tools;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace Composer
 {
@@ -44,7 +45,7 @@ namespace Composer
             {
                 new FilterInsideStaff(),
                 new FilterChordTones(),
-                new FilterLimitSkip(6),
+                new FilterLimitSkip(),
                 new FilterAvoidRepeats(),
                 new FilterCloseToNeighbors(),
             };
@@ -55,7 +56,7 @@ namespace Composer
                 new FilterLimitSkip(6),
                 new FilterForbiddenTensions(),
                 new FilterAvoidRepeats(),
-                new FilterSmoothTransition()
+                new FilterWeakNcts()
             };
         }
 
@@ -124,10 +125,10 @@ namespace Composer
             return this;
         }
 
-        public SimpleMelodyMaker WithNctStrongBeats(double nctRatio = StrongBeatNonChordTonesRatio)
+        public SimpleMelodyMaker WithNctStrongBeats()
         {
             strongNoteFilters.RemoveAll(filter => filter is FilterChordTones);
-            var filter = new FilterChordTones(nctRatio);
+            var filter = new FilterStrongNcts();
             strongNoteFilters.Add(filter);
             return this;
         }
@@ -152,14 +153,22 @@ namespace Composer
             var notes = AvailableNotes();
             InitializeFilters(notes);
 
-            FillFirstMeasure(result, notes, chords[0], rhythm.Measures[0]);
+            FillFirstMeasure(result, notes, chords[0], chords[1], rhythm.Measures[0], rhythm.Measures[1]);
 
             for (var measure = 1; measure < measuresCount - 1; measure++)
             {
-                FillMeasure(result, notes, measure, chords[measure % chords.Length], rhythm.Measures[measure % rhythm.MeasureCount]);
+                FillMeasure(result, notes, measure, chords[measure % chords.Length], chords[(measure + 1) % chords.Length], 
+                    rhythm.Measures[measure % rhythm.MeasureCount], rhythm.Measures[(measure + 1) % rhythm.MeasureCount]);
             }
 
             FillLastMeasure(result, notes, measuresCount - 1, chords[(measuresCount - 1) % chords.Length], 
+                rhythm.Measures[(measuresCount - 1) % rhythm.MeasureCount]);
+
+            for (var i = 0; i < measuresCount - 1; i++)
+            {
+                FillWeakBeats(result, i, notes, chords[i % chords.Length], chords[(i + 1) % chords.Length], rhythm.Measures[i % rhythm.MeasureCount]);
+            }
+            FillWeakBeats(result, measuresCount - 1, notes, chords[(measuresCount - 1) % chords.Length], null, 
                 rhythm.Measures[(measuresCount - 1) % rhythm.MeasureCount]);
 
             return result;
@@ -221,6 +230,7 @@ namespace Composer
             ScaleStep[] notes,
             IEnumerable<IPitchFilter> filters,
             Chord chord,
+            Chord? nextChord,
             ScaleStep? previousNote,
             ScaleStep? nextNote,
             bool nextIsStrong,
@@ -233,7 +243,7 @@ namespace Composer
 
             foreach (var filter in filters)
             {
-                var fromFilter = filter.GetWeights(chord, previousNote, nextNote, nextIsStrong, measure, startTime, endTime);
+                var fromFilter = filter.GetWeights(chord, nextChord, previousNote, nextNote, nextIsStrong, measure, startTime, endTime);
                 mults.Add(filter.GetType().Name, fromFilter);
                 var newWeights = weights.Mult(fromFilter);
                 if (newWeights.Max() <= 0)
@@ -258,37 +268,27 @@ namespace Composer
             return note;
         }
 
-        private void FillFirstMeasure(Staff target, ScaleStep[] notes, Chord chord, IReadOnlyList<Note> rhythm)
+        private void FillFirstMeasure(Staff target, ScaleStep[] notes, Chord chord, Chord nextChord, IReadOnlyList<Note> rhythm, IReadOnlyList<Note> nextRhythm)
         {
-            var weights = ApplyFilters(notes, strongNoteFilters, chord, null, null, false, 0, rhythm[0].StartTime, rhythm[0].EndTime);
-            var currentPitch = rand.SelectRandomly(notes, weights);
-            currentPitch = ApplyAccidental(currentPitch, chord);
+            var currentPitch = SelectNote(notes, strongNoteFilters, chord, nextChord, rhythm, nextRhythm, null, rhythm[0]);
             target.AddNote(0, rhythm[0].AtPitch(currentPitch));
 
             foreach (var note in rhythm.Skip(1).Where(n => n.Pitch.Step == 0))
             {
-                weights = ApplyFilters(notes, strongNoteFilters, chord, currentPitch, null, false, 0, note.StartTime, note.EndTime);
-                currentPitch = rand.SelectRandomly(notes, weights);
-                currentPitch = ApplyAccidental(currentPitch, chord);
+                currentPitch = SelectNote(notes, strongNoteFilters, chord, nextChord, rhythm, nextRhythm, currentPitch, note);
                 target.AddNote(0, note.AtPitch(currentPitch));
             }
-
-            FillWeakBeats(target, 0, notes, chord, rhythm);
         }
 
-        private void FillMeasure(Staff target, ScaleStep[] notes, int measure, Chord chord, IReadOnlyList<Note> rhythm)
+        private void FillMeasure(Staff target, ScaleStep[] notes, int measure, Chord chord, Chord nextChord, IReadOnlyList<Note> rhythm, IReadOnlyList<Note> nextRhythm)
         {
             var currentPitch = target.NoteBefore(measure, 0)?.Pitch ?? new ScaleStep(0);
 
             foreach (var note in rhythm.Where(n => n.Pitch.Step == 0))
             {
-                var weights = ApplyFilters(notes, strongNoteFilters, chord, currentPitch, null, false, measure, note.StartTime, note.EndTime);
-                currentPitch = rand.SelectRandomly(notes, weights);
-                currentPitch = ApplyAccidental(currentPitch, chord);
+                currentPitch = SelectNote(notes, strongNoteFilters, chord, nextChord, rhythm, nextRhythm, currentPitch, note);
                 target.AddNote(measure, note.AtPitch(currentPitch));
             }
-
-            FillWeakBeats(target, measure, notes, chord, rhythm);
         }
 
         private bool UnifySamePitch(Staff target, int measure, ScaleStep currentPitch)
@@ -317,20 +317,42 @@ namespace Composer
             {              
                 foreach (var note in rhythm.Where(n => n.Pitch.Step == 0 && n.StartTime < lastBeat))
                 {
-                    var weights = ApplyFilters(notes, strongNoteFilters, chord, currentPitch, finalPitch, true, measure, note.StartTime, note.EndTime);
-                    currentPitch = rand.SelectRandomly(notes, weights);
-                    currentPitch = ApplyAccidental(currentPitch, chord);
+                    currentPitch = SelectNote(notes, strongNoteFilters, chord, null, rhythm, null, currentPitch, note);
                     target.AddNote(measure, note.AtPitch(currentPitch));
                 }
             }
 
-            if (!UnifySamePitch(target, measure, currentPitch))
-            {
-                FillWeakBeats(target, measure, notes, chord, rhythm, lastBeat);
-            }
+            UnifySamePitch(target, measure, currentPitch);
         }
 
-        private void FillWeakBeats(Staff target, int measure, ScaleStep[] notes, Chord chord, IReadOnlyList<Note> rhythm, int end = int.MaxValue)
+        private ScaleStep SelectNote(ScaleStep[] allNotes, List<IPitchFilter> filters, Chord chord, Chord? nextChord,
+            IReadOnlyList<Note> rhythm, IReadOnlyList<Note>? nextRhythm, ScaleStep? previousPitch, Note rhythmNote)
+        {
+            var (nextIsStrong, nextIsSameChord) = IdentifyNextNote(rhythmNote, rhythm, nextRhythm);
+            var weights = ApplyFilters(allNotes, strongNoteFilters, chord, nextIsSameChord ? chord : nextChord,
+                    previousPitch, null, nextIsStrong, 0, rhythmNote.StartTime, rhythmNote.EndTime);
+            var pitch = rand.SelectRandomly(allNotes, weights);
+            pitch = ApplyAccidental(pitch, chord);
+            return pitch;
+        }
+
+        private (bool nextIsStrong, bool nextIsSameChord) IdentifyNextNote(Note note, IReadOnlyList<Note> rhythm, IReadOnlyList<Note>? nextRhythm)
+        {
+            var nextRhythmNote = rhythm.FirstOrDefault(n => n.StartTime == note.EndTime);
+            var nextIsSameChord = true;
+
+            if (nextRhythmNote == null && nextRhythm != null)
+            {
+                nextRhythmNote = nextRhythm.First();
+                nextIsSameChord = false;
+            }
+
+            bool nextIsStong = nextRhythmNote == null || nextRhythmNote.Pitch.Step == 0;
+
+            return (nextIsStong, nextIsSameChord);
+        }
+
+        private void FillWeakBeats(Staff target, int measure, ScaleStep[] notes, Chord chord, Chord? nextChord, IReadOnlyList<Note> rhythm, int end = int.MaxValue)
         {
             foreach (var note in rhythm.Where(n => n.Pitch.Step > 0 && n.EndTime <= end))
             {
@@ -342,7 +364,7 @@ namespace Composer
                 var before = target.NoteBefore(measure, note.StartTime);
                 var after = target.NoteAfter(measure, note.StartTime);
 
-                var weights = ApplyFilters(notes, weakNoteFilters, chord, before?.Pitch, after?.Pitch, nextIsStrong, measure, note.StartTime, note.EndTime);
+                var weights = ApplyFilters(notes, weakNoteFilters, chord, nextChord, before?.Pitch, after?.Pitch, nextIsStrong, measure, note.StartTime, note.EndTime);
                 var currentPitch = rand.SelectRandomly(notes, weights);
                 currentPitch = ApplyAccidental(currentPitch, chord);
 

@@ -14,6 +14,7 @@ namespace Composer.Melody.PitchFilters
 
         protected override double GetWeight(ScaleStep thisNote,
             Chord chord,
+            Chord? nextChord,
             ScaleStep? previousNote,
             ScaleStep? nextNote,
             bool nextIsStrong,

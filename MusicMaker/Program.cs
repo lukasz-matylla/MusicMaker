@@ -79,9 +79,6 @@ namespace MusicMaker
                 case Harmony.Simple:
                     break;
                 case Harmony.Classic:
-                    melodyMaker = melodyMaker
-                        .WithChromaticTransitions();
-                    break;
                 case Harmony.Complex:
                 case Harmony.Free:
                     melodyMaker = melodyMaker
@@ -89,18 +86,17 @@ namespace MusicMaker
                         .WithNctStrongBeats();
                     break;
             }
-                            
-            var melody = melodyMaker.GenerateMelody(par.Length);
-            parts.Add(melody);
-            
+                                     
             var bassMakerFactory = new BassMakerFactory();
             var bassMaker = bassMakerFactory.CreateBassMaker(par.BassType, par.BassPattern);
-            if (bassMaker != null)
-            {
-                Console.WriteLine("Generating bass");
-                var bass = bassMaker.GenerateBass(chords, rhythm, key: par.Tonic, scale: chordGraph.Scale, tempo: par.Tempo, measuresCount: par.Length);
-                parts.Add(bass);
-            }
+            Console.WriteLine("Generating bass");
+            var bass = bassMaker.GenerateBass(chords, rhythm, key: par.Tonic, scale: chordGraph.Scale, tempo: par.Tempo, measuresCount: par.Length);
+            
+            melodyMaker = melodyMaker.Above(bass, false);
+            var melody = melodyMaker.GenerateMelody(par.Length);
+
+            parts.Add(melody);
+            parts.Add(bass);
 
             if (!string.IsNullOrEmpty(par.OutputFile))
             {
