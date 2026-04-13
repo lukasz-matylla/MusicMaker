@@ -48,6 +48,7 @@ namespace Composer
                 new FilterLimitSkip(),
                 new FilterAvoidRepeats(),
                 new FilterCloseToNeighbors(),
+                new FilterResolution(true)
             };
 
             weakNoteFilters = new List<IPitchFilter>()
@@ -56,7 +57,8 @@ namespace Composer
                 new FilterLimitSkip(6),
                 new FilterForbiddenTensions(),
                 new FilterAvoidRepeats(),
-                new FilterWeakNcts()
+                new FilterWeakNcts(),
+                new FilterResolution()
             };
         }
 

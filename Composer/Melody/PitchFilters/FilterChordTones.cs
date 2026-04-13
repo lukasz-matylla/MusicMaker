@@ -18,7 +18,7 @@ namespace Composer.Melody.PitchFilters
             int startTime, 
             int endTime)
         {
-            if (chord.Notes.Any(n => n.Step == thisNote.Step && n.Accidental == thisNote.Accidental))
+            if (chord.Notes.Any(n => n.Step == thisNote.Step))
             {
                 return 1.0;
             }

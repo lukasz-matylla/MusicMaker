@@ -34,7 +34,7 @@ namespace Composer.Melody.PitchFilters
             var beforeSteps = Scale.StepInterval(previousNote, thisNote);
             var afterSteps = Scale.StepInterval(thisNote, nextNote);
 
-            var isChordTone = chord.Notes.Any(n => n.Step == thisNote.Step && n.Accidental == thisNote.Accidental);
+            var isChordTone = chord.Notes.Any(n => n.Step == thisNote.Step);
 
             // passing note
             if (beforeInterval * afterInterval > 0 && Math.Abs(beforeInterval) <= 2 && Math.Abs(afterInterval) <= 2)

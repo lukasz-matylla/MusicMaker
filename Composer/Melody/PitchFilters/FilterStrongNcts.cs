@@ -32,12 +32,11 @@ namespace Composer.Melody.PitchFilters
             int startTime, 
             int endTime)
         {
-            if (chord.Notes.Any(n => n.Step == thisNote.Step && n.Accidental == thisNote.Accidental))
+            // chord tones
+            if (chord.Notes.Any(n => n.Step == thisNote.Step))
             {
                 return 1.0;
             }
-
-            var noteWithoutOctave = thisNote.WithOctave(0);
 
             // suspension - keep previous note, resolve down on next beat
             if (thisNote.Equals(previousNote) && nextChord != null && nextChord.Equals(chord) 
