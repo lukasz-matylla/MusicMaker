@@ -86,10 +86,9 @@ namespace Composer
 
 
             if (Math.Abs(stepsFromChordTone) == 1 ||
-                halftonesFromChordTone == 1 ||
-                halftonesFromChordTone == -7)
+                halftonesFromChordTone == 1)
             {
-                // next chord tone approaches by step, leading tone of a fifth
+                // next chord tone approaches by step or leading tone
                 return nextChordTone;
             }
             

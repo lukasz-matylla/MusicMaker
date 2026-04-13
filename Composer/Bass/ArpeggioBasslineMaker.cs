@@ -7,8 +7,8 @@ namespace Composer
     {
         protected override int Cutoff => 2;
 
-        protected readonly int[] standarPattern = new[] { 0, 2, 1, 2 };
-        protected readonly int[] standarPatternSkip5 = new[] { 0, 3, 1, 3 };
+        protected readonly int[] standarPattern = [0, 2, 1, 2];
+        protected readonly int[] standarPatternSkip5 = [0, 3, 1, 3];
 
         public ArpeggioPattern Pattern { get; }
         public int NotesPerBeat { get; }
