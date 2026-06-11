@@ -84,14 +84,32 @@ namespace Composer
             var stepsFromChordTone = scale.StepInterval(nextChordTone, nextRoot);
             var halftonesFromChordTone = scale.HalftoneInterval(nextChordTone, nextRoot);
 
-
             if (Math.Abs(stepsFromChordTone) == 1 ||
-                halftonesFromChordTone == 1)
+                Math.Abs(halftonesFromChordTone) == 1)
             {
-                // next chord tone approaches by step or leading tone
+                // next chord tone approaches by step or half-step
                 return nextChordTone;
             }
-            
+
+            if (halftonesFromChordTone == 5 ||
+                halftonesFromChordTone == -7)
+            {
+                // next chord tone approaches by a fifth
+                return nextChordTone;
+            }
+
+            // next chord tone is too far, try subsequent one
+            nextChordTone = directionUp ?
+                    ChordOperations.NextToneAbove(chord, scale, nextChordTone) :
+                    ChordOperations.NextToneBelow(chord, scale, nextChordTone);
+
+            if (Math.Abs(stepsFromChordTone) == 1 ||
+                Math.Abs(halftonesFromChordTone) == 1)
+            {
+                // next chord tone approaches by step or half-step
+                return nextChordTone;
+            }
+
             var stepsFromCurrent = scale.StepInterval(current, nextRoot);
             var halftonesFromCurrent = scale.HalftoneInterval(current, nextRoot);
 
@@ -101,8 +119,45 @@ namespace Composer
                 return scale.ChangeByHalftones(current, halftonesFromCurrent / 2);
             }
 
-            // if all else fails, just move half the distance to target note
-            return scale.ChangeBySteps(nextRoot, -stepsFromCurrent / 2);
+            if (Math.Abs(stepsFromCurrent) == 2)
+            {
+                // passing tone
+                return scale.ChangeBySteps(current, stepsFromCurrent / 2);
+            }
+
+            if (Math.Abs(stepsFromCurrent) > 2)
+            {
+                // too far, try to approach by step
+                var target = scale.ChangeBySteps(nextRoot, directionUp ? -1 : 1);
+                if (scale.Steps.Any(s => s == scale.StepToPitch(target.WithOctave(0))))
+                {
+                    return target;
+                }
+                target = scale.ChangeByHalftones(target, directionUp ? 1 : -1);
+                return target;
+            }
+
+            // half tone from or at the target root - overshoot
+            if (directionUp)
+            {
+                var target = scale.ChangeByHalftones(nextRoot, 2);
+                if (scale.Steps.Any(s => s == scale.StepToPitch(target.WithOctave(0))))
+                {
+                    return target;
+                }
+                target = scale.ChangeByHalftones(target, -1);
+                return target;
+            }
+            else
+            {
+                var target = scale.ChangeByHalftones(nextRoot, -2);
+                if (scale.Steps.Any(s => s == scale.StepToPitch(target.WithOctave(0))))
+                {
+                    return target;
+                }
+                target = scale.ChangeByHalftones(target, 1);
+                return target;
+            }
         }
 
         private bool GetDirectionByPrevious(MusicalScale scale, ScaleStep previousRoot, ScaleStep previousLast)

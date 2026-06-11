@@ -24,17 +24,29 @@ namespace Composer
             new Pattern(MeasureType.Any, 4, 2, 2),
             new Pattern(MeasureType.Any, 4, 2, 2),
 
+            new Pattern(MeasureType.Any, 4, 2, 1, 1),
+
             new Pattern(MeasureType.Any, 6, 2),
-            new Pattern(MeasureType.Any, 6, 2),          
+            new Pattern(MeasureType.Any, 6, 2),
+
+            new Pattern(MeasureType.Any, 6, 1, 1),
 
             new Pattern(MeasureType.Middle, 2, 2, 2, 2),
             new Pattern(MeasureType.Middle, 2, 2, 2, 2),
+
+            new Pattern(MeasureType.Middle, 2, 2, 2, 1, 1),
+
+            new Pattern(MeasureType.Middle, 2, 1, 1, 2, 1, 1),
+
+            new Pattern(MeasureType.Middle, 1, 1, 1, 1, 1, 1, 1, 1),
 
             new Pattern(MeasureType.Middle, 2, 6),
 
             new Pattern(MeasureType.Middle, 2, 2, 4),
 
             new Pattern(MeasureType.Middle, 2, 4, 2),
+
+            new Pattern(MeasureType.Middle, 2, 4, 1, 1),
         ];
 
         private readonly Pattern[] TriplePatterns =

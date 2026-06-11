@@ -55,15 +55,21 @@ namespace Composer.Melody.PitchFilters
             }
 
             // resolve NCT by step down to a chord tone
-            if (thisIsChordTone && Math.Abs(stepsBefore) == -1)
+            if (thisIsChordTone && stepsBefore == -1)
             {
                 return 1;
             }
 
             // resolve NCT by step up to a chord tone
-            if (thisIsChordTone && Math.Abs(stepsBefore) == 1)
+            if (thisIsChordTone && stepsBefore == 1)
             {
                 return Cutoff;
+            }
+
+            // any resolution may be out of range, so at least target a chord tone
+            if (thisIsChordTone)
+            {
+                return Cutoff*Cutoff;
             }
 
             return 0;

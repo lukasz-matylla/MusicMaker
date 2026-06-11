@@ -358,6 +358,11 @@ namespace Composer
         {
             foreach (var note in rhythm.Where(n => n.Pitch.Step > 0 && n.EndTime <= end))
             {
+                if (target.Measures[measure].Any(n => n.StartTime <= note.StartTime && n.EndTime >= note.EndTime))
+                {
+                    continue;
+                }
+
                 var nextStrong = rhythm.FirstOrDefault(n => n.Pitch.Step == 0 && n.StartTime > note.StartTime);
                 var nextWeak = rhythm.FirstOrDefault(n => n.Pitch.Step > 0 && n.StartTime > note.StartTime);
                 var nextIsStrong = 
